@@ -1,0 +1,527 @@
+{
+    "4174": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4175": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4176": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4178": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4179": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4180": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4181": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4182": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4183": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4184": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4187": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4188": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4189": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4190": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4191": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4195": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4196": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4197": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4198": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4199": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4200": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4202": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4203": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4204": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4205": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4206": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4207": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4208": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4209": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4210": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4211": {
+        "BEAM": "ELE", 
+        "ENERGY": "100", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4259": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4260": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4261": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4266": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4267": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4268": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4269": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4270": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4271": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4272": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4273": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4274": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4275": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4276": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4277": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4278": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4279": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4280": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4281": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4282": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4283": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4284": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4285": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4287": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4288": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4289": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4291": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4292": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4293": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4294": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4296": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4297": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P120"
+    }, 
+    "4298": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4299": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4300": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4301": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4302": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P300"
+    }, 
+    "4303": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4304": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4305": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4306": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4307": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4308": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }, 
+    "4309": {
+        "BEAM": "PION", 
+        "ENERGY": "150", 
+        "HV1": 600, 
+        "HV2": 800, 
+        "SENSOR": "P200"
+    }
+}
