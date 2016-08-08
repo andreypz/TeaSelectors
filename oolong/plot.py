@@ -18,8 +18,8 @@ from math import sqrt
 from array import array
 from ROOT import *
 gROOT.SetBatch()
-gROOT.ProcessLine(".L ~/tdrstyle.C")
-gROOT.LoadMacro("~/CMS_lumi.C")
+gROOT.ProcessLine(".L ../sugar-n-milk/tdrstyle.C")
+gROOT.LoadMacro("../sugar-n-milk/CMS_lumi.C")
 setTDRStyle()
 gROOT.ForceStyle()
 if not opt.verb:

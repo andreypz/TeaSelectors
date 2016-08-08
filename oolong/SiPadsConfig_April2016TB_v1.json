@@ -1,0 +1,41 @@
+{
+    "TB_DATA": "2016, April's test beam. Reco tree version 3",
+    "TB_INDEX": 1,
+    "SiType": "N",
+    "PADSMAP1":{"Trigger":0,
+		"SiPad1": 4,
+		"SiPad2": 5,
+		"SiPad3": 6,
+		"SiPad4": 3,
+		"SiPad5": 2,
+		"SiPad6": 1
+	      },
+    "PADSMAP2":{"0":"Trigger",
+		"1":"SiPad6",
+		"2":"SiPad5",
+		"3":"SiPad4",
+		"4":"SiPad1",
+		"5":"SiPad2",
+		"6":"SiPad3"
+	       },
+    "ADCperMIP": { "set_1": { "SiPad1": 18.0, "SiPad2": 18.0,
+			      "SiPad3": 13.0, "SiPad4": 12.5,
+			      "SiPad5": 11.3, "SiPad6":  8.9
+			    },
+		   "set_2": { "SiPad1": 34.0, "SiPad2": 34.0,
+			      "SiPad3": 27.5, "SiPad4": 27.9,
+			      "SiPad5": 21.1, "SiPad6": 16.3
+			    },
+		   "set_3": { "SiPad1": 40.0, "SiPad2": 40.0,
+			      "SiPad3": 36.4, "SiPad4": 35.6,
+			      "SiPad5": 36.3, "SiPad6": 30.2
+			    }
+		 },
+
+    "ped_offset": 140,
+    "trig_offset": 134.5,
+    "wc_cut_x": [0, -3.351, -3.351, -3.351],
+    "wc_cut_y": [0, -0.706, -0.706, -0.706],
+    "BeginRun": 3650,
+    "EndRun":   3800 
+}

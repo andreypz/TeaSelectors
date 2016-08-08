@@ -32,7 +32,17 @@ class myAna : public TSelector {
   TFile* histoFile;
   HistManager *hists;
 
-  //string RUN, BEAM;
+
+  Char_t TB = 0;
+  map<string, UInt_t> PadsMap1;
+  map<UInt_t, string> PadsMap2;
+  
+  UInt_t ped_offset;
+  Float_t trig_offset;
+  Float_t wc_cut_x[4];
+  Float_t wc_cut_y[4];
+  UInt_t runs[2];
+  map<UInt_t, Float_t> ADCperMIP;
 
  public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain

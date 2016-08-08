@@ -5,80 +5,15 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/foreach.hpp>
 #include <iostream>
 
 namespace pt = boost::property_tree;
 
 pt::ptree TB_RUNS_DATA;
+pt::ptree TB_PADS_DATA;
 
-/**/
-// ToDo: Much better would be to implement these settings into a json file.
-// Take initial data from here:
-// https://docs.google.com/spreadsheets/d/19FfZoQwFF7ZfK7Ujjwe6YZRQvfTXdvQ-N_XqVxKlUvg/edit?pref=2&pli=1#gid=712039595
-
-/// April's settings:
-const Char_t TB = 1;
-map<UInt_t, string> PadsMap = {
-  {0, "Trigger"},
-  {1, "SiPad6"}, {2, "SiPad5"}, {3, "SiPad4"},
-  {4, "SiPad1"}, {5, "SiPad2"}, {6, "SiPad3"}};
-enum class PadsEnum {SiPad1 = 4, SiPad2 = 5, SiPad3=6, SiPad4=3, SiPad5=2, SiPad6=1};
-
-map<UInt_t, Float_t> ADCperMIP ={
-  // Set 1 (120 um)
-  {14, 18.0}, {15, 18.0}, // SiPad 1 and 2 (closest to beam, non-irradiated)
-  {16, 13.0}, {13, 12.5}, // 3 and 4
-  {12, 11.3}, {11,  8.9},  // 5 and 6 (further from beam)
-  // Set 2 (200 um)
-  {24, 34.0}, {25, 34.0}, // SiPad 1 and 2 (closest to beam)
-  {26, 27.5}, {23, 27.9}, // 3 and 4
-  {22, 21.1}, {21, 16.3},  // 5 and 6 (further from beam)
-  // Set 3 (300 um)
-  {34, 40.0}, {35, 40.0}, // SiPad 1 and 2 (closest to beam)
-  {36, 36.4}, {33, 35.6}, // 3 and 4
-  {32, 36.3}, {31, 30.2}  // 5 and 6 (further from beam)
-};
-
-const UInt_t ped_offset = 140;
-const Float_t trig_offset = 134.5;
 const UInt_t nMIPs = 15;
-const Float_t wc_cut_x[4] = {0, -3.351, -3.351, -3.351};
-const Float_t wc_cut_y[4] = {0, -0.706, -0.706, -0.706};
-const UInt_t runs[2] = {3650,3800};
-/**/
-
-/// Junes's settings:
-/*
-const Char_t TB = 2;
-map<UInt_t, string> PadsMap = {
-  {0, "Trigger"},
-  {1, "SiPad1"}, {2, "SiPad2"}, {3, "SiPad3"},
-  {4, "SiPad4"}, {5, "SiPad5"}, {6, "SiPad6"}};
-enum class PadsEnum {SiPad1 = 1, SiPad2 = 2, SiPad3=3, SiPad4=4, SiPad5=5, SiPad6=6};
-
-map<UInt_t, Float_t> ADCperMIP ={
-  // Set 1 (120 um)
-  {11, 18.0}, {12, 18.0}, // SiPad 1 and 2 (closest to beam, non-irradiated)
-  {13, 15.1}, {14, 15.6}, // 3 and 4
-  {15, 11.3}, {16,  9.8},  // 5 and 6 (further from beam)
-  // Set 2 (200 um)
-  {21, 34.0}, {22, 34.0}, // SiPad 1 and 2 (closest to beam)
-  {23, 26.2}, {24, 19.8}, // 3 and 4
-  {25, 21.6}, {26, 18.3},  // 5 and 6 (further from beam)
-  // Set 3 (300 um)
-  {31, 40.0}, {32, 40.0}, // SiPad 1 and 2 (closest to beam)
-  {33, 37.3}, {34, 32.5}, // 3 and 4
-  {35, 34.1}, {36, 27.0}  // 5 and 6 (further from beam)
-};
-
-const UInt_t ped_offset = 3610;
-const Float_t trig_offset = 111.5;
-const UInt_t nMIPs = 15;
-const Float_t wc_cut_x[4] = {0, -3.351, -3.351, -3.351};
-const Float_t wc_cut_y[4] = {0, -0.706, -0.706, -0.706};
-const UInt_t runs[2] = {4170,4320};
-*/
-// END of settings
 
 void myAna::Begin(TTree * /*tree*/)
 {
@@ -94,25 +29,66 @@ void myAna::SlaveBegin(TTree * /*tree*/)
 
   TString option = GetOption();
 
-  string JSONPATH = "";
+  string JSONPATH1, JSONPATH2 = "";
   cout<<"option = "<<option.Data()<<endl;
   TObjArray *args = (TObjArray*)option.Tokenize(" ");
   if (args->GetSize()>1)
-    JSONPATH = (string)((TObjString*)args->At(0))->GetString();
+    JSONPATH1 = (string)((TObjString*)args->At(0))->GetString();
+  if (args->GetSize()>2)
+    JSONPATH2 = (string)((TObjString*)args->At(1))->GetString();
 
   // Will count events passing by each pad separately.
   // Now, set them all to zero:
-  for (size_t n=0; n<nC; n++){
-    nEvents[static_cast<UInt_t>(PadsEnum::SiPad1)][n]=0;
-    nEvents[static_cast<UInt_t>(PadsEnum::SiPad2)][n]=0;
-    nEvents[static_cast<UInt_t>(PadsEnum::SiPad3)][n]=0;
-    nEvents[static_cast<UInt_t>(PadsEnum::SiPad4)][n]=0;
-    nEvents[static_cast<UInt_t>(PadsEnum::SiPad5)][n]=0;
-    nEvents[static_cast<UInt_t>(PadsEnum::SiPad6)][n]=0;
-    nEvents[0][n]=0;
-  }
+  for (UInt_t n=0; n<nC; n++)
+    for (UInt_t p=0; p<7; p++)
+      nEvents[p][n]=0;
 
-  pt::read_json(JSONPATH, TB_RUNS_DATA);
+  pt::read_json(JSONPATH1, TB_RUNS_DATA);
+
+  // Here, read the JSON file with the Pads configuraion (mapping, constants, etc)
+  pt::read_json(JSONPATH2, TB_PADS_DATA);
+
+  TB = TB_PADS_DATA.get<char>("TB_INDEX");
+  
+  PadsMap1["Trigger"] = TB_PADS_DATA.get<int>("PADSMAP1.Trigger");
+  PadsMap1["SiPad1"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad1");
+  PadsMap1["SiPad2"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad2");
+  PadsMap1["SiPad3"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad3");
+  PadsMap1["SiPad4"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad4");
+  PadsMap1["SiPad5"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad5");
+  PadsMap1["SiPad6"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad6");
+
+  for (UInt_t i = 0; i < 7; i++)
+    PadsMap2[i]  = TB_PADS_DATA.get<std::string>(Form("PADSMAP2.%i",i));
+
+
+  for (UInt_t s=1; s<=3; s++)
+    for (UInt_t p=1; p<=6; p++){
+      ADCperMIP[10*s+p] = TB_PADS_DATA.get<float>(Form("ADCperMIP.set_%i.%s",s,PadsMap2[p].c_str()));
+      //cout<<"s="<<s<<"  p ="<<p<<"  adc="<<ADCperMIP[10*s+p]<<endl;
+    }
+
+  
+  ped_offset  = TB_PADS_DATA.get<float>("ped_offset");
+  trig_offset = TB_PADS_DATA.get<float>("trig_offset");;
+
+  UInt_t i=0;
+  BOOST_FOREACH(boost::property_tree::ptree::value_type &v, TB_PADS_DATA.get_child("wc_cut_x")) {
+    wc_cut_x[i] = v.second.get_value<float>();
+    i++; }
+
+  i=0;
+  BOOST_FOREACH(boost::property_tree::ptree::value_type &v, TB_PADS_DATA.get_child("wc_cut_y")) {
+    wc_cut_y[i] = v.second.get_value<float>();
+    i++; }
+
+  //for (UInt_t p=0;p<4;p++)
+  //cout<<p<<"  wc_x="<<wc_cut_x[p]<<"   wc_y="<<wc_cut_y[p]<<endl;
+
+  runs[0] = TB_PADS_DATA.get<int>("BeginRun");
+  runs[1] = TB_PADS_DATA.get<int>("EndRun");
+
+  // Done with reading JSON
 
   fProofFile = new TProofOutputFile("TB_2016_myHistograms.root");
   fOutput->Add(fProofFile);
@@ -122,13 +98,15 @@ void myAna::SlaveBegin(TTree * /*tree*/)
   TH1::SetDefaultSumw2(kTRUE);
   hists = new HistManager(histoFile);
 
+
+
 }
 
 
 Bool_t myAna::Process(Long64_t entry)
 {
   GetEntry(entry);
-  for (size_t p=0; p<7; p++)
+  for (UInt_t p=0; p<7; p++)
     nEvents[p][0]++;
 
   string RUN = Form("%i",runNumber);
@@ -138,6 +116,7 @@ Bool_t myAna::Process(Long64_t entry)
   std::string SENSOR = TB_RUNS_DATA.get<std::string>(RUN+".SENSOR");
   std::string HV1    = TB_RUNS_DATA.get<std::string>(RUN+".HV1");
   std::string HV2    = TB_RUNS_DATA.get<std::string>(RUN+".HV2");
+
 
   Char_t set = 0;
   if (SENSOR=="P120" || SENSOR=="N120") set = 1;
@@ -159,8 +138,8 @@ Bool_t myAna::Process(Long64_t entry)
 		     runs[1]-runs[0], runs[0], runs[1], 10, 10, 1, "PER-RUN");
 
 
-  UInt_t front = static_cast<UInt_t>(PadsEnum::SiPad1);
-  UInt_t back  = static_cast<UInt_t>(PadsEnum::SiPad6);
+  UInt_t front = static_cast<UInt_t>(PadsMap1["SiPad1"]);
+  UInt_t back  = static_cast<UInt_t>(PadsMap1["SiPad6"]);
 
   for (size_t tagIndex=0; tagIndex<4; tagIndex++)
     {
@@ -176,15 +155,15 @@ Bool_t myAna::Process(Long64_t entry)
 
       if (tagIndex==1 && BEAM!="ELE") continue; // only do this for ELEctron runs, because of two energies
 
-      
+
       hists->fill1DHist(t_at_threshold[0], "TrigDelay_Scintilator"+tag,
 			";Time of Trigger (scintilator), ns; Events", 200, 150,180, 1, "Timing"+tag);
 
       for (size_t pad = 1; pad<7; pad++){
 
-	string suffix = Form("%s_ch%i", PadsMap[pad].c_str(), (int)pad);
+	string suffix = Form("%s_ch%i", PadsMap2[pad].c_str(), (int)pad);
 
-	Float_t aMiPcOr = 1.0; 
+	Float_t aMiPcOr = 1.0;
 	if (TB==1 && HV2=="600" && (pad==1||pad==2||pad==3||pad==6))
 	  aMiPcOr = 0.875;
 	Float_t mipsInPad = wave_max[pad]/ADCperMIP[10*set+pad]/aMiPcOr;
@@ -209,7 +188,7 @@ Bool_t myAna::Process(Long64_t entry)
 	// Count events here:
 	//----------------------
 	FillHistoCounts(0, suffix,tag);
-	
+
 	if (wave_max[front]/ADCperMIP[10*set+front] < 15){
 	  FillHistoCounts(1, suffix,tag);
 
@@ -250,8 +229,8 @@ Bool_t myAna::Process(Long64_t entry)
 	}
 
 	// All events are accouted for..
-	
-	
+
+
 	// -------------------
 	// NOW.
 	// --- Only for good signals (#Mips > X)
@@ -436,12 +415,12 @@ void myAna::SlaveTerminate()
   cout<<"n |"<<setw(10)<<" SiPad1| SiPad2| SiPad3| SiPad4| SiPad5| SiPad6 |"<<endl;
   for (UInt_t n=0; n<nC; n++){
     cout<< n<<" |"<<setw(6)
-	<<nEvents[static_cast<UInt_t>(PadsEnum::SiPad1)][n]<<" |"<<setw(6)
-	<<nEvents[static_cast<UInt_t>(PadsEnum::SiPad2)][n]<<" |"<<setw(6)
-	<<nEvents[static_cast<UInt_t>(PadsEnum::SiPad3)][n]<<" |"<<setw(6)
-	<<nEvents[static_cast<UInt_t>(PadsEnum::SiPad4)][n]<<" |"<<setw(6)
-	<<nEvents[static_cast<UInt_t>(PadsEnum::SiPad5)][n]<<" |"<<setw(6)
-	<<nEvents[static_cast<UInt_t>(PadsEnum::SiPad6)][n]<<" |"
+	<<nEvents[PadsMap1["SiPad1"]][n]<<" |"<<setw(6)
+	<<nEvents[PadsMap1["SiPad2"]][n]<<" |"<<setw(6)
+	<<nEvents[PadsMap1["SiPad3"]][n]<<" |"<<setw(6)
+	<<nEvents[PadsMap1["SiPad4"]][n]<<" |"<<setw(6)
+	<<nEvents[PadsMap1["SiPad5"]][n]<<" |"<<setw(6)
+	<<nEvents[PadsMap1["SiPad6"]][n]<<" |"
 	<<endl;
 
   }

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from ROOT import *
-#gROOT.SetMacroPath(".:../src/:../interface/");
 import os,json
 
 import argparse
@@ -12,23 +11,26 @@ parser.add_argument("--june", dest="june", action="store_true", default=False, h
 
 opt = parser.parse_args()
 #print opt
+
+workingPath = os.getcwd()
+#workingPath = '/afs/cern.ch/user/a/andrey/work/hgcal-tb/TeaSelectors/oolong/'
+
 if opt.june:
-    pp1 = '/afs/cern.ch/user/a/andrey/work/hgcal-tb/tb-ana/June2016_v2/'
+    pp1 = workingPath+'/June2016_v2/'
     pp2 = "root://eoscms//eos/cms/store/group/upgrade/HGCAL/TimingTB_H2_Apr2016/June2016/recoTrees_v2/"
-    jsonpath = '/afs/cern.ch/user/a/andrey/work/hgcal-tb/tb-ana/RunSummaryTB_June2016.json'
+    jsonpath1 = workingPath+'/RunSummaryTB_June2016.json'
+    jsonpath2 = workingPath+'/SiPadsConfig_June2016TB_v1.json'
 else:
-    pp1 = '/afs/cern.ch/user/a/andrey/work/hgcal-tb/tb-ana/April2016_v3/'
+    pp1 = workingPath+'/April2016_v3/'
     pp2 = "root://eoscms//eos/cms/store/group/upgrade/HGCAL/TimingTB_H2_Apr2016/April2016/recoTrees_v3/"
-    jsonpath = '/afs/cern.ch/user/a/andrey/work/hgcal-tb/tb-ana/RunSummaryTB_April2016.json'
+    jsonpath1 = workingPath+'/RunSummaryTB_April2016.json'
+    jsonpath2 = workingPath+'/SiPadsConfig_April2016TB_v1.json'
 
-
-gSystem.Load("HistManager_cc.so")
-#gROOT.LoadMacro("HistManager.cc+")
 
 fChain = TChain("H4treeReco");
 
 if opt.all:
-    with open(jsonpath, 'r') as fp:
+    with open(jsonpath1, 'r') as fp:
         TB_DATA = json.load(fp)        
     myRUNS = [int(i) for i in TB_DATA.keys()]
 else:
@@ -42,20 +44,27 @@ for r in myRUNS:
         print 'Loading Local file, for run', r 
         fChain.Add(localFile);
     else:
-        print 'EOS file, run', r 
+        print 'Loading EOS file, for run', r 
         fChain.Add("%s/RECO_%i.root" % (pp2,r));
     
 timer = TStopwatch()
 timer.Start()
 
 if opt.proof:
+    gSystem.SetBuildDir("buildDir", kTRUE)
+    gSystem.AddIncludePath(" -I"+workingPath+"/../sugar-n-milk/");
     plite = TProof.Open("workers=6")
-    plite.Load("HistManager.cc+")
+    plite.Load(workingPath+"/buildDir/HistManager_cc.so")
+    #plite.Load(workingPath+"/../sugar-n-milk/HistManager.cc+")
     fChain.SetProof()
-    fChain.Process("myAna.C+", jsonpath)   
+    fChain.Process("myAna.C+",'%s %s' % (jsonpath1,jsonpath2))   
     fChain.SetProof(0)
     
-else: 
-    fChain.Process("myAna.C+", jsonpath)
+else:
+    gSystem.SetBuildDir("buildDir", kTRUE)
+    gSystem.AddIncludePath(" -I"+workingPath+"/../sugar-n-milk/");
+    #gSystem.Load("HistManager_cc.so")
+    gROOT.LoadMacro("../sugar-n-milk/HistManager.cc+")
+    fChain.Process("myAna.C+", '%s %s' % (jsonpath1,jsonpath2))
 
 print "Done!", "CPU Time: ", timer.CpuTime(), "RealTime : ", timer.RealTime()
