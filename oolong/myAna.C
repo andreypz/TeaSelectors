@@ -49,7 +49,7 @@ void myAna::SlaveBegin(TTree * /*tree*/)
   pt::read_json(JSONPATH2, TB_PADS_DATA);
 
   TB = TB_PADS_DATA.get<char>("TB_INDEX");
-  
+
   PadsMap1["Trigger"] = TB_PADS_DATA.get<int>("PADSMAP1.Trigger");
   PadsMap1["SiPad1"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad1");
   PadsMap1["SiPad2"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad2");
@@ -68,7 +68,7 @@ void myAna::SlaveBegin(TTree * /*tree*/)
       //cout<<"s="<<s<<"  p ="<<p<<"  adc="<<ADCperMIP[10*s+p]<<endl;
     }
 
-  
+
   ped_offset  = TB_PADS_DATA.get<float>("ped_offset");
   trig_offset = TB_PADS_DATA.get<float>("trig_offset");;
 
@@ -347,6 +347,12 @@ Bool_t myAna::Process(Long64_t entry)
 
 	}
 
+	///SJ added it
+	Float_t sOvern_pad = wave_max[pad]/pedestalRMS[pad];
+	Float_t sOvern_ref = wave_max[front]/pedestalRMS[front];
+
+	Float_t sOvern_12 = (sOvern_pad * sOvern_ref)/sqrt( sOvern_pad*sOvern_pad + sOvern_ref*sOvern_ref ) ;
+
 	// Select good signal in Pad 1 and make 2D plots in other Pads
 	if (wave_max[front]/ADCperMIP[10*set+front] > nMIPs && pad!=front){
 
@@ -363,7 +369,17 @@ Bool_t myAna::Process(Long64_t entry)
 	  hists->fill2DHist(wave_max[pad]/pedestalRMS[pad], t_max_frac50[pad] - refPad1,
 			    "2D_Delay_from_Pad1_frac50_VS_SigOverNoise_"+suffix+tag,
 			    ";Signal/Noise;T_{padX} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
+
+
+	  hists->fill2DHist(sOvern_12, t_max_frac50[pad] - refPad1, "2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X_nMiPcut_"+suffix+tag,
+			    ";SN_1*SN_X/#sqrt{SN_1^2+SN_X^2};T_{padX} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
+
 	}
+
+	// And this one selects only some minu=imal signal in both pas
+	if (wave_max[pad] > 3*pedestalRMS[pad] && wave_max[front] > 3*pedestalRMS[front] && pad!=front)
+	  hists->fill2DHist(sOvern_12, t_max_frac50[pad] - refPad1, "2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X_"+suffix+tag,
+			    ";SN_1*SN_X/#sqrt{SN_1^2+SN_X^2};T_{padX} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
 
       }
 

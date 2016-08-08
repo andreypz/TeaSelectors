@@ -23,7 +23,7 @@ gROOT.LoadMacro("../sugar-n-milk/CMS_lumi.C")
 setTDRStyle()
 gROOT.ForceStyle()
 if not opt.verb:
-  gROOT.ProcessLine( "gErrorIgnoreLevel = 1001;")
+  gROOT.ProcessLine("gErrorIgnoreLevel = 1001;")
 
 if opt.june:
   outDir = './Plots-TB-June/'

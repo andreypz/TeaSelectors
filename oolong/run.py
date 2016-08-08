@@ -53,7 +53,9 @@ timer.Start()
 if opt.proof:
     gSystem.SetBuildDir("buildDir", kTRUE)
     gSystem.AddIncludePath(" -I"+workingPath+"/../sugar-n-milk/");
-    plite = TProof.Open("workers=6")
+    
+    plite = TProof.Open("workers=4")
+    plite.SetParameter("PROOF_LookupOpt", "none")
     plite.Load(workingPath+"/buildDir/HistManager_cc.so")
     #plite.Load(workingPath+"/../sugar-n-milk/HistManager.cc+")
     fChain.SetProof()
