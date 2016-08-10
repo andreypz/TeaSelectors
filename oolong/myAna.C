@@ -366,22 +366,22 @@ Bool_t myAna::Process(Long64_t entry)
 
 	  hists->fill2DHist(mipsInPad, t_max_frac50[pad] - refPad1,
 			    "2D_Delay_from_Pad1_frac50_VS_nMIPs_"+suffix+tag,
-			    ";Number of MiPs;T_{padX} - T_{pad1}, ns", 400, 0,60, 200, -0.6,0.6, 1,"Timing"+tag);
+			    ";Number of MiPs;T_{padN} - T_{pad1}, ns", 400, 0,60, 200, -0.6,0.6, 1,"Timing"+tag);
 
 	  hists->fill2DHist(wave_max[pad]/pedestalRMS[pad], t_max_frac50[pad] - refPad1,
 			    "2D_Delay_from_Pad1_frac50_VS_SigOverNoise_"+suffix+tag,
-			    ";Signal/Noise;T_{padX} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
+			    ";Signal/Noise;T_{padN} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
 
 
 	  hists->fill2DHist(sOvern_12, t_max_frac50[pad] - refPad1, "2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X_nMiPcut_"+suffix+tag,
-			    ";SN_1*SN_X/#sqrt{SN_1^2+SN_X^2};T_{padX} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
+			    ";S_{1}S_{N} / #sqrt{S_{1}^{2} + S_{N}^{2}};T_{padN} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
 
 	}
 
 	// And this one selects only some minu=imal signal in both pas
 	if (wave_max[pad] > 3*pedestalRMS[pad] && wave_max[front] > 3*pedestalRMS[front] && pad!=front)
 	  hists->fill2DHist(sOvern_12, t_max_frac50[pad] - refPad1, "2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X_"+suffix+tag,
-			    ";SN_1*SN_X/#sqrt{SN_1^2+SN_X^2};T_{padX} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
+			    ";S_{1}S_{N} / #sqrt{S_{1}^{2} + S_{N}^{2}};T_{padN} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
 
       }
 

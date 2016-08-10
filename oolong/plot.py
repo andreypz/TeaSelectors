@@ -301,7 +301,7 @@ def allPadsOnOnePlot(myF, hName, tag, fit=False, overHists=None):
   if overHists!= None:
     # This is written for 'PER-RUN' cases, where I'd like to overlay
     # shade histograms to identofy certain runs: Pedestal Runs, 300 um set, etc
-    print 'Drawing overhists!'
+    # print 'Drawing overhists!'
     ovleg = TLegend(0.55,0.72,0.7,0.90)
     for ov in overHists:
       ov.Draw('same hist')
