@@ -1,9 +1,9 @@
 {
-    "TB_DATA": "2016 June's test beam.",
-    "TB_INDEX": 2,
-    "SiType": "P",
-    "BeginRun": 4170,
-    "EndRun":   4320,
+    "TB_DATA": "2016, April's test beam. Json for the last re-reco.",
+    "TB_INDEX": 1,
+    "SiType": "N",
+    "BeginRun": 3650,
+    "EndRun":   3800,
     "PADSMAP1":{"SiPad1": 1,
 		"SiPad2": 2,
 		"SiPad3": 3,
@@ -20,21 +20,21 @@
 		"6":"SiPad6"
 	       },
     "ADCperMIP": { "set_1": { "SiPad1": 18.0, "SiPad2": 18.0,
-			      "SiPad3": 15.1, "SiPad4": 15.6,
-			      "SiPad5": 11.3, "SiPad6":  9.8
+			      "SiPad3": 13.0, "SiPad4": 12.5,
+			      "SiPad5": 11.3, "SiPad6":  8.9
 			    },
 		   "set_2": { "SiPad1": 34.0, "SiPad2": 34.0,
-			      "SiPad3": 26.2, "SiPad4": 19.8,
-			      "SiPad5": 21.6, "SiPad6": 18.3
+			      "SiPad3": 27.5, "SiPad4": 27.9,
+			      "SiPad5": 21.1, "SiPad6": 16.3
 			    },
 		   "set_3": { "SiPad1": 40.0, "SiPad2": 40.0,
-			      "SiPad3": 37.3, "SiPad4": 32.5,
-			      "SiPad5": 34.1, "SiPad6": 27.0
+			      "SiPad3": 36.4, "SiPad4": 35.6,
+			      "SiPad5": 36.3, "SiPad6": 30.2
 			    }
 		 },
-    
-    "ped_offset": 3610,
-    "trig_offset": 111.5,
+
+    "ped_offset": 140,
+    "trig_offset": 134.5,
     "wc_cut_x": [0, -3.351, -3.351, -3.351],
     "wc_cut_y": [0, -0.706, -0.706, -0.706]
 }

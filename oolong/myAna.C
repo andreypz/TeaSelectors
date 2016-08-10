@@ -49,8 +49,10 @@ void myAna::SlaveBegin(TTree * /*tree*/)
   pt::read_json(JSONPATH2, TB_PADS_DATA);
 
   TB = TB_PADS_DATA.get<char>("TB_INDEX");
+  cout<<"\n Running with config: "<<JSONPATH2<<endl;
+  cout<<"\t INFO: TB="<<TB<<" \n"<<TB_PADS_DATA.get<string>("TB_DATA")<<endl<<endl;
 
-  PadsMap1["Trigger"] = TB_PADS_DATA.get<int>("PADSMAP1.Trigger");
+  //PadsMap1["Trigger"] = TB_PADS_DATA.get<int>("PADSMAP1.Trigger");
   PadsMap1["SiPad1"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad1");
   PadsMap1["SiPad2"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad2");
   PadsMap1["SiPad3"]  = TB_PADS_DATA.get<int>("PADSMAP1.SiPad3");

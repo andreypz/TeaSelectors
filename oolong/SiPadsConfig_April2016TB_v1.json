@@ -1,9 +1,10 @@
 {
-    "TB_DATA": "2016, April's test beam. Reco tree version 3",
+    "TB_DATA": "2016, April's test beam.\n Mapping is valid for all reco trees, except the last version, for which see another json\n",
     "TB_INDEX": 1,
     "SiType": "N",
-    "PADSMAP1":{"Trigger":0,
-		"SiPad1": 4,
+    "BeginRun": 3650,
+    "EndRun":   3800,
+    "PADSMAP1":{"SiPad1": 4,
 		"SiPad2": 5,
 		"SiPad3": 6,
 		"SiPad4": 3,
@@ -35,7 +36,5 @@
     "ped_offset": 140,
     "trig_offset": 134.5,
     "wc_cut_x": [0, -3.351, -3.351, -3.351],
-    "wc_cut_y": [0, -0.706, -0.706, -0.706],
-    "BeginRun": 3650,
-    "EndRun":   3800 
+    "wc_cut_y": [0, -0.706, -0.706, -0.706]
 }
