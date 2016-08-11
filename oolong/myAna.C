@@ -147,8 +147,8 @@ Bool_t myAna::Process(Long64_t entry)
     {
       string tag = "_";
       if (tagIndex==1 && TB==2) continue; // Disable for June's Runs (only one energy is available)
-      if (tagIndex==2) continue; // Disable for now, takes too long to run
-      if (tagIndex==3) continue; // Disable for now, takes too long to run
+      if (tagIndex==2) continue; // It takes very long to run if this line is commented out.
+      //if (tagIndex==3) continue; // It takes very long to run if this line is commented out.
 
       if (tagIndex==0) tag = "_GROUP_0_"+BEAM+"_SENSOR_"+SENSOR+"_irrHV_"+HV2;
       else if (tagIndex==1) tag = "_GROUP_1_"+BEAM+"_E"+ENERGY+"GEV_SENSOR_"+SENSOR+"_irrHV_"+HV2;
@@ -362,7 +362,7 @@ Bool_t myAna::Process(Long64_t entry)
 			    ";Number of MiPs;Events", 400, 0,60, 1,"Other"+tag);
 
 	  hists->fill1DHist(wave_max[pad]/pedestalRMS[pad], "Signal_over_noise_"+suffix+tag,
-			    ";Signal/Noise;Events", 400, 2,160, 1,"Other"+tag);
+			    ";Signal/Noise;Events", 400, 2,140, 1,"Other"+tag);
 
 	  hists->fill2DHist(mipsInPad, t_max_frac50[pad] - refPad1,
 			    "2D_Delay_from_Pad1_frac50_VS_nMIPs_"+suffix+tag,
@@ -370,18 +370,17 @@ Bool_t myAna::Process(Long64_t entry)
 
 	  hists->fill2DHist(wave_max[pad]/pedestalRMS[pad], t_max_frac50[pad] - refPad1,
 			    "2D_Delay_from_Pad1_frac50_VS_SigOverNoise_"+suffix+tag,
-			    ";Signal/Noise;T_{padN} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
-
+			    ";Signal/Noise;T_{padN} - T_{pad1}, ns", 400, 2,140, 200, -0.6,0.6, 1,"Timing"+tag);
 
 	  hists->fill2DHist(sOvern_12, t_max_frac50[pad] - refPad1, "2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X_nMiPcut_"+suffix+tag,
-			    ";S_{1}S_{N} / #sqrt{S_{1}^{2} + S_{N}^{2}};T_{padN} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
+			    ";S_{1}S_{N} / #sqrt{S_{1}^{2} + S_{N}^{2}};T_{padN} - T_{pad1}, ns", 400, 2,140, 200, -0.6,0.6, 1,"Timing"+tag);
 
 	}
 
 	// And this one selects only some minu=imal signal in both pas
 	if (wave_max[pad] > 3*pedestalRMS[pad] && wave_max[front] > 3*pedestalRMS[front] && pad!=front)
 	  hists->fill2DHist(sOvern_12, t_max_frac50[pad] - refPad1, "2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X_"+suffix+tag,
-			    ";S_{1}S_{N} / #sqrt{S_{1}^{2} + S_{N}^{2}};T_{padN} - T_{pad1}, ns", 400, 2,160, 200, -0.6,0.6, 1,"Timing"+tag);
+			    ";Effective S/N;T_{padN} - T_{pad1}, ns", 400, 2,140, 200, -0.6,0.6, 1,"Timing"+tag);
 
       }
 

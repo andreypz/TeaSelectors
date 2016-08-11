@@ -15,6 +15,8 @@ parser.add_argument("--hv",  dest="hv", nargs='+', default=['800','600'],
                     help="Specify which HV2 data we should run")
 parser.add_argument("--beam",  dest="beam", nargs='+', default=['ELE','PION'],
                     help="Specify which BEAM data we should run")
+parser.add_argument("--allruns",  dest="allruns", action="store_true", default=False,
+                    help="Make the plots for each run (they shold be present in the input file)")
 
 opt = parser.parse_args()
 #print opt
@@ -48,7 +50,7 @@ allPads = SiPad_DATA['PADSMAP1']
 
 with open(jsonFile2, 'r') as fp:
   TB_DATA = json.load(fp)
-  
+
 PadsCol = {"SiPad1":1, "SiPad2":47, "SiPad3":8, "SiPad4":9, "SiPad5":41, "SiPad6":46}
 
 c1 = TCanvas("c1","small canvas",600,600);
@@ -171,7 +173,7 @@ def allPadsOnOnePlot(myF, hName, tag, fit=False, overHists=None):
   else: c0=c1
   c0.cd()
 
-  
+
   h = {}
   hmaxima=[]
   for p, ch in allPads.iteritems():
@@ -297,7 +299,7 @@ def allPadsOnOnePlot(myF, hName, tag, fit=False, overHists=None):
     l2.SetLineStyle(kDashed)
     l2.Draw()
 
-    
+
   if overHists!= None:
     # This is written for 'PER-RUN' cases, where I'd like to overlay
     # shade histograms to identofy certain runs: Pedestal Runs, 300 um set, etc
@@ -307,21 +309,21 @@ def allPadsOnOnePlot(myF, hName, tag, fit=False, overHists=None):
       ov.Draw('same hist')
       ov.SetLineStyle(3)
       ov.SetLineWidth(0)
-      if ov.GetName()=='300': ovCol = kRed  
-      if ov.GetName()=='200': ovCol = kOrange  
-      if ov.GetName()=='120': ovCol = kCyan 
-      if ov.GetName()=='Ped': ovCol = kBlue  
-      if ov.GetName()=='Pio': ovCol = kGreen  
+      if ov.GetName()=='300': ovCol = kRed
+      if ov.GetName()=='200': ovCol = kOrange
+      if ov.GetName()=='120': ovCol = kCyan
+      if ov.GetName()=='Ped': ovCol = kBlue
+      if ov.GetName()=='Pio': ovCol = kGreen
       ov.SetFillColorAlpha(ovCol, 0.2)
 
       ovleg.AddEntry(ov, ov.GetName()+' Runs','f')
-      
+
     # Re-drawing legend
     leg.SetX1(0.8)
     leg.SetY1(0.64)
     leg.Draw()
     ovleg.Draw()
-    
+
   c0.SaveAs(path+"/"+split[1]+tag+'.png')
 
 def drawLabel(tag):
@@ -351,10 +353,8 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
   c0.cd()
 
   h = {}
-  karambaMe = {}
-  karambaSi = {}
-  resPar = {}
-  resErr = {}
+  karambaMe, karambaSi = {}, {}
+  constTerm, noiseTerm, noiseErr, constErr = {}, {}, {}, {}
   for p, ch in allPads.iteritems():
     #suffix = p+'_ch'+str(ch)
     suffix = '_'+p+'_ch'+str(ch)
@@ -376,24 +376,23 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
 
     if '_VS_nMIPs' in hName:
       varBins = [0,2,3,5,7,9,11,13,15,17,19,21,23,25,27,30,35,40,45,50,60]
-      xBins = [int(400*x/60) for x in varBins]
+      xBins = [int(400*x/60)+1 for x in varBins]
       xTitle = ';Number of MiPs'
       figName = '_VS_nMIPs'
     elif '_VS_SigOverNoise' in hName:
-      varBins = [2,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,75,90,160]
-      xBins = [int(400*(x-2)/158) for x in varBins]
+      varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
+      xBins = [int(400*(x-2)/138)+1 for x in varBins]
       xTitle = ';Signal/Noise'
       figName = '_VS_SigOverNoise'
     elif '_VS_sOvern_Pad1X_nMiPcut' in hName:
-      varBins = [2,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,75,160]
-      #varBins = [2,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160]
-      xBins = [int(400*(x-2)/158) for x in varBins]
-      xTitle = ';S_{1}S_{N} / #sqrt{S_{1}^{2} + S_{N}^{2}}'
+      varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
+      xBins = [int(400*(x-2)/138)+1 for x in varBins]
+      xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X_nMiPcut'
     elif '_VS_sOvern_Pad1X' in hName:
-      varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,75,90,160]
-      xBins = [int(400*(x-2)/158)+1 for x in varBins]
-      xTitle = ';S_{1}S_{N} / #sqrt{S_{1}^{2} + S_{N}^{2}}'
+      varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
+      xBins = [int(400*(x-2)/138)+1 for x in varBins]
+      xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X'
 
     # xBins are bin-numbers of the varBins (see conversion above)
@@ -439,25 +438,38 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
 
       if doSigmaFit:
         c0_2 = c1
-        #    f = TF1 ('f','sqrt([0]*[0]/(x*x) + [1]*[1]/x + [2]*[2])', 2.,160.)
-        #    f = TF1 ('f','sqrt([0]*[0] + [1]*[1]/x + [2]*[2]/(x*x) + [3]*[3]/(x*x*x))', 2.,160.)
-        #    f = TF1 ('f','sqrt([0]*[0]/(x*x) + [1]*[1])', 2.,160.)
-        #    f = TF1 ('f','sqrt([0]*[0]/(x*x) + [1]*[1])', 10,160.)
-        f2 = TF1 ('f2','sqrt([0]*[0]/(x*x) + [1]*[1]/x + [2]*[2])', 10.,160.)
+
+        # Two parameters fit
+
+        f2 = TF1 ('f2','sqrt([0]*[0]/(x*x) + [1]*[1])', 2,140.)
         f2.SetParameters(5, 0.001, 0.05)
-        f2.SetParLimits(0, 0, 10)
-        f2.SetParLimits(1, 0, 10)
-        f2.SetParLimits(2, 0, 0.3)
-        karambaSi[p].Fit(f2,'QR')
+        f2.SetParLimits(0, 0, 5)
+        f2.SetParLimits(1, 0, 0.2)
+
+        # Three parameters fit:
+
+        f3 = TF1 ('f3','sqrt([0]*[0]/(x*x) + [1]*[1]/x + [2]*[2])', 2.,140.)
+        f3.SetParameters(5, 0.001, 0.05)
+        f3.SetParLimits(0, 0, 5)
+        f3.SetParLimits(1, 0, 0.1)
+        f3.SetParLimits(2, 0.005, 0.2)
+
+        fToUse = f2
+        ConstParInd = 1
+        
+        karambaSi[p].Fit(fToUse,'Q','',5,70)
 
         karambaSi[p].Draw()
         karambaSi[p].SetMaximum(0.4)
-        f2.Draw("same")
+        karambaSi[p].SetMinimum(0.0)
+        fToUse.Draw("same")
         c0_2.SaveAs(path+'/SJ_fit_SOverN'+figName+"_"+p+'.png')
         # c0_2.SaveAs(path+'/SJ_fit_SOverN_'+p+'.C')
 
-        resPar[p] = f2.GetParameter(2)
-        resErr[p] = f2.GetParError(2)
+        noiseTerm[p] = fToUse.GetParameter(0)
+        noiseErr[p]  = fToUse.GetParError(0)
+        constTerm[p] = fToUse.GetParameter(ConstParInd)
+        constErr[p]  = fToUse.GetParError(ConstParInd)
 
 
   drawOpt= 'e1p'
@@ -498,7 +510,7 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
   c0.SaveAs(path+'/KarambaSi'+figName+'.png')
 
 
-  if doSigmaFit: return resPar, resErr
+  if doSigmaFit: return noiseTerm, noiseErr, constTerm, constErr
 
 
 def effPlot(myF, tag):
@@ -576,26 +588,25 @@ def effPlot(myF, tag):
 
 
 if __name__ == "__main__":
-  print "This is the main part"
+  print "This is the __main__ part"
   f = TFile(opt.fname,'OPEN')
 
   # Which plots to make:
   tags = []
 
-  if opt.mini:
-
-    print "\t Only doing test plots (--mini)\n First, let's remove the directory: ", outDir
-
-    import shutil
+  import shutil
+  try:
     shutil.rmtree(outDir)
+  except OSError:
+    print outDir, 'probably does not exist. moving on...'
 
-  ''' We ar not doing per-run plots for now:
 
-  for r, param in TB_DATA.iteritems():
-    if opt.verb: print r, param
-    # if r in ['3777','3778','3776']:
-    tags.append("_RUN_"+r+"_"+param['BEAM']+"_E"+param['ENERGY']+"GEV_SENSOR_"+param['SENSOR']+"_irrHV_"+param['HV2'])
-  '''
+  if opt.allruns:
+    for r, param in TB_DATA.iteritems():
+      if opt.verb: print r, param
+      # if r in ['3777','3778','3776']:
+      if param['BEAM'] in opt.beam and param['HV2'] in opt.hv:
+        tags.append("_RUN_"+r+"_"+param['BEAM']+"_E"+param['ENERGY']+"GEV_SENSOR_"+param['SENSOR']+"_irrHV_"+param['HV2'])
 
   for s in ['120','200','300']:
     for b in opt.beam:
@@ -623,21 +634,22 @@ if __name__ == "__main__":
     print '\t -> Making plots for tag:', tag
 
     if opt.mini:
+
+      print "\t Only doing test plots (--mini)\n First, let's remove the directory: ", outDir
+  
       if 'GROUP_0_ELE_' not in tag: continue
 
       # sigmaPlots with fits:
 
       sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_SigOverNoise',tag)
-      b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, True)
-      #sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag)
-      #b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X_nMiPcut',tag, True)
+      b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, doSigmaFit=True)
 
       print '\t Fit results for tag=',tag
       #print b[tag][0], b[tag][1]
 
       for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
         try:
-          print "%s, %.3f +/- %.3f" % (p, b[tag][0][p], b[tag][1][p])
+          print "%s, %.3f +/- %.3f \t %.3f +/- %.3f" % (p, b[tag][0][p], b[tag][1][p], b[tag][2][p], b[tag][3][p])
         except KeyError:
           print 'Key error exception for pad:', p
 
@@ -680,7 +692,7 @@ if __name__ == "__main__":
     # Sigma plots (without fits):
     sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_nMIPs',tag)
     sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_SigOverNoise',tag)
-    sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag,)
+    sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag)
     sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X_nMiPcut',tag)
 
 
@@ -698,7 +710,7 @@ if __name__ == "__main__":
     h300 = TH1F('300','300', runs[1]-runs[0], runs[0], runs[1])
     h200 = TH1F('200','200', runs[1]-runs[0], runs[0], runs[1])
     h120 = TH1F('120','120', runs[1]-runs[0], runs[0], runs[1])
-    
+
     for i in TB_DATA:
       # print i
       if TB_DATA[str(i)]['ENERGY'] == 'ped':
