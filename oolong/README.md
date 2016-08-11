@@ -8,7 +8,8 @@ and makes plots for each Silicon Pad, utilizing the HistManager tool.
   - ```--june```: run over June's data (by default it assumes April's
 data. Some JSON files are different wrt April and June).  
 This option must be consistent with ```-r```. That is, the run number
-should belong to June's data, e.g.  ```./run.py -r 4211 --june```  
+should belong to June's data, e.g.  
+```./run.py -r 4211 --june```  
   -```--all```: run over all the runs (April's Tb by default. Use
 ```--june``` to run over June's TB)  
   - ```--proof``` - finally, you can run this with PROOF!  
