@@ -403,7 +403,7 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
     karambaMe[p] = TH1D('Mean'+p,xTitle+";Mean of (t_{N} - t_{1}), ns", len(varBins)-1,array('d',varBins))
     karambaSi[p] = TH1D('Sigma'+p,xTitle+";#sigma(t_{N} - t_{1}), ns",  len(varBins)-1,array('d',varBins))
 
-    for n in range(0,len(xBins)-1):
+    for n in range(1,len(xBins)-1):
       proj = h[p].ProjectionY("", xBins[n], xBins[n+1]-1)
 
       # print n,'Doing bin:', xBins[n], xBins[n+1]
@@ -436,40 +436,42 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
       #print '\t My Fit result for mean: ', fMean, fMeanErr
       #print '\t  \t for sigma: ', fSigma, fSigmaErr
 
-      if doSigmaFit:
-        c0_2 = c1
-
-        # Two parameters fit
-
-        f2 = TF1 ('f2','sqrt([0]*[0]/(x*x) + [1]*[1])', 2,140.)
-        f2.SetParameters(5, 0.001, 0.05)
-        f2.SetParLimits(0, 0, 5)
-        f2.SetParLimits(1, 0, 0.2)
-
-        # Three parameters fit:
-
-        f3 = TF1 ('f3','sqrt([0]*[0]/(x*x) + [1]*[1]/x + [2]*[2])', 2.,140.)
-        f3.SetParameters(5, 0.001, 0.05)
-        f3.SetParLimits(0, 0, 5)
-        f3.SetParLimits(1, 0, 0.1)
-        f3.SetParLimits(2, 0.005, 0.2)
-
-        fToUse = f2
-        ConstParInd = 1
+    if doSigmaFit:
+      # print 'Doing sigma fit on ', hName, tag
+      # print '\t pad =',p
+      c0_2 = c1
         
-        karambaSi[p].Fit(fToUse,'Q','',5,70)
+      # Two parameters fit
 
-        karambaSi[p].Draw()
-        karambaSi[p].SetMaximum(0.4)
-        karambaSi[p].SetMinimum(0.0)
-        fToUse.Draw("same")
-        c0_2.SaveAs(path+'/SJ_fit_SOverN'+figName+"_"+p+'.png')
-        # c0_2.SaveAs(path+'/SJ_fit_SOverN_'+p+'.C')
+      f2 = TF1 ('f2','sqrt([0]*[0]/(x*x) + [1]*[1])', 2,140.)
+      f2.SetParameters(5, 0.001, 0.05)
+      f2.SetParLimits(0, 0, 5)
+      f2.SetParLimits(1, 0, 0.2)
 
-        noiseTerm[p] = fToUse.GetParameter(0)
-        noiseErr[p]  = fToUse.GetParError(0)
-        constTerm[p] = fToUse.GetParameter(ConstParInd)
-        constErr[p]  = fToUse.GetParError(ConstParInd)
+      # Three parameters fit:
+
+      f3 = TF1 ('f3','sqrt([0]*[0]/(x*x) + [1]*[1]/x + [2]*[2])', 2.,140.)
+      f3.SetParameters(5, 0.001, 0.05)
+      f3.SetParLimits(0, 0, 5)
+      f3.SetParLimits(1, 0, 0.1)
+      f3.SetParLimits(2, 0.005, 0.2)
+      
+      fToUse = f2
+      ConstParInd = 1
+        
+      karambaSi[p].Fit(fToUse,'Q','',5,70)
+
+      karambaSi[p].Draw()
+      karambaSi[p].SetMaximum(0.4)
+      karambaSi[p].SetMinimum(0.0)
+      fToUse.Draw("same")
+      c0_2.SaveAs(path+'/SJ_fit_SOverN'+figName+"_"+p+'.png')
+      # c0_2.SaveAs(path+'/SJ_fit_SOverN_'+p+'.C')
+
+      noiseTerm[p] = fToUse.GetParameter(0)
+      noiseErr[p]  = fToUse.GetParError(0)
+      constTerm[p] = fToUse.GetParameter(ConstParInd)
+      constErr[p]  = fToUse.GetParError(ConstParInd)
 
 
   drawOpt= 'e1p'
@@ -629,31 +631,10 @@ if __name__ == "__main__":
 
         #tags.append("_GROUP_2_SENSOR_"+s+"_irrHV_"+hv)
 
-  b={}
   for tag in tags:
+    if opt.mini: continue
+    
     print '\t -> Making plots for tag:', tag
-
-    if opt.mini:
-
-      print "\t Only doing test plots (--mini)\n First, let's remove the directory: ", outDir
-  
-      if 'GROUP_0_ELE_' not in tag: continue
-
-      # sigmaPlots with fits:
-
-      sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_SigOverNoise',tag)
-      b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, doSigmaFit=True)
-
-      print '\t Fit results for tag=',tag
-      #print b[tag][0], b[tag][1]
-
-      for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
-        try:
-          print "%s, %.3f +/- %.3f \t %.3f +/- %.3f" % (p, b[tag][0][p], b[tag][1][p], b[tag][2][p], b[tag][3][p])
-        except KeyError:
-          print 'Key error exception for pad:', p
-
-      continue
 
     #justPlotAll(f,'Main'+tag)
     #justPlotAll(f,'Timing'+tag)
@@ -728,3 +709,28 @@ if __name__ == "__main__":
     allPadsOnOnePlot(f,'PER-RUN'+'/PedestalRMS_PerRun','',overHists=[h300,h200,h120,hPed,hPio])
     allPadsOnOnePlot(f,'PER-RUN'+'/Pedestal_PerRun_WithSig','',overHists=[h300,h200,h120,hPed,hPio])
     allPadsOnOnePlot(f,'PER-RUN'+'/PedestalRMS_PerRun_WithSig','',overHists=[h300,h200,h120,hPed,hPio])
+
+
+  if opt.mini:
+    b={}
+    fitData = {}
+    #ind = tag.find('SENSOR')
+    print "\t Only doing test plots (--mini)\n First, let's remove the directory: ", outDir
+    for tag in tags:
+      print '\t -> Making plots for tag:', tag
+      if 'GROUP_0_ELE_' not in tag: continue
+
+      # sigmaPlots with fits:
+      sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_SigOverNoise',tag)
+      b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, doSigmaFit=True)
+
+    for tag in tags:
+      print '\t Fit results for tag=',tag
+      # print b[tag][0], b[tag][1]
+
+      for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
+        try:
+          print "%s, %.3f +/- %.3f \t %.3f +/- %.3f" % (p, b[tag][0][p], b[tag][1][p], b[tag][2][p], b[tag][3][p])
+        except KeyError:
+          print 'Key error exception for pad:', p
+
