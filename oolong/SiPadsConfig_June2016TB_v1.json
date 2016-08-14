@@ -32,10 +32,10 @@
 			      "SiPad5": 34.1, "SiPad6": 27.0
 			    }
 		 },
-    
+
     "fluence": { "set_1": { "SiPad1": 0, "SiPad2": 0,
 			    "SiPad3": 6.25E15, "SiPad4": 6.25E15,
-			    "SiPad5": 1.00E16, "SiPad6": 1.60E16 
+			    "SiPad5": 1.00E16, "SiPad6": 1.60E16
 			  },
 		 "set_2": { "SiPad1": 0, "SiPad2": 0,
 			    "SiPad3": 1.50E15, "SiPad4": 2.50E15,
@@ -43,10 +43,11 @@
 			  },
 		 "set_3": { "SiPad1": 0, "SiPad2": 0,
 			    "SiPad3": 4.00E14, "SiPad4": 6.00E14,
-			    "SiPad5": 6.00E14, "SiPad6": 9.00E14 
+			    "SiPad5": 6.00E14, "SiPad6": 9.00E14
 			  }
 		},
-    "SetsMap": {"set_1":"120um", "set_2":"200um", "set_3":"300um"},
+    "SetsMap1": {"set_1":"120um", "set_2":"200um", "set_3":"300um"},
+    "SetsMap2": {"120um":"set_1", "200um":"set_2", "300um":"set_3"},
     "ped_offset": 3610,
     "trig_offset": 111.5,
     "wc_cut_x": [0, -3.351, -3.351, -3.351],
