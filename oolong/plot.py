@@ -376,27 +376,24 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
 
     if '_VS_nMIPs' in hName:
       varBins = [0,2,3,5,7,9,11,13,15,17,19,21,23,25,27,30,35,40,45,50,60]
-      xBins = [int(400*x/60)+1 for x in varBins]
       xTitle = ';Number of MiPs'
       figName = '_VS_nMIPs'
     elif '_VS_SigOverNoise' in hName:
       varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
-      xBins = [int(400*(x-2)/138)+1 for x in varBins]
       xTitle = ';Signal/Noise'
       figName = '_VS_SigOverNoise'
     elif '_VS_sOvern_Pad1X_nMiPcut' in hName:
       varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
-      xBins = [int(400*(x-2)/138)+1 for x in varBins]
       xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X_nMiPcut'
     elif '_VS_sOvern_Pad1X' in hName:
       varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
-      xBins = [int(400*(x-2)/138)+1 for x in varBins]
       xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X'
 
     # xBins are bin-numbers of the varBins (see conversion above)
     # It assumes that the total number of bins on the axis is 400.
+    xBins = [int(400*x/(varBins[-1]-varBins[0]))+1 for x in varBins]
     # print 'varBins:\n \t', varBins
     # print 'xBins:\n \t', xBins
 

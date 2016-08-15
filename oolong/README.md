@@ -1,3 +1,9 @@
+## How to brew it
+
+One should be able to run this code with just a couple commands:
+* ```./run.py --all --proof [--june]``` - to produce the histograms (saved into a root file).
+* ```./plot.py [--june, --mini]``` - to make plots out of those histograms.
+
 ## Main ingredients
 
 * **myAna.C**: Selector to run over the data. It loops over events
@@ -22,8 +28,11 @@ This is the way to go when running over full dataset: ```./run.py --all --proof`
   * ```--beam BEAM``` - specify the beam data to plot. Options: *ELE*, *PION*, by default plots both.
   * ```--fit```   - make some fits.
   * ```--mini``` - don't make all the plots, just those under ```if opt.mini``` in the code. This option is for testing new things.
-  * ```-v```   - prints more stuff. You don't want that...  
   * ```--allruns```   - Make plots for each run separately (must be saved in the *FNAME*)  
+  * ```-v```   - verbosity to print more stuff. You don't want that...  
+
+* **resPlot.py** - takes as input the Root files which contain the
+  Graphs with final time resolution measurement (produced by *plot.py*) and makes the plots.
 
 * **makeJson.py** - reads the csv run summary data and creates json
   files.

@@ -52,8 +52,8 @@ elif opt.tb in ['june']:
     DiodeType = 'P'
 
       
-    hv1 = 600
-    hv2 = 800
+    hv1 = "600"
+    hv2 = "800"
     TB_RUNS[str(RUN)] = {'BEAM':BEAM, 'ENERGY':EN, 'SENSOR':DiodeType+row[5], 'HV1':hv1, 'HV2':hv2}
   
 with open('jj.json', 'w') as fp:
