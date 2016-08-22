@@ -405,7 +405,7 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
 
       # print n,'Doing bin:', xBins[n], xBins[n+1]
       # print ' \t which correspond to varBins:\n\t', varBins[n], varBins[n+1]
-      if proj.GetEntries()<60:
+      if proj.GetEntries()<60: # Default: 60
         if opt.verb:
           print '\t WARNING: you have too few event to fit for tag:', tag
           print '\t\t  nEvents = ',proj.GetEntries(),'  pad = '+p+'  bins:', xBins[n], xBins[n+1]
@@ -414,7 +414,8 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
 
       m = proj.GetMean()
       r = proj.GetRMS()
-      proj.Fit('gaus','Q','', m-3*r, m+3*r)
+      FitRangeSigma = 3 # Default: 3
+      proj.Fit('gaus','Q','', m-FitRangeSigma*r, m+FitRangeSigma*r)
       f = proj.GetFunction('gaus')
       fMean = f.GetParameter(1)
       fMeanErr = f.GetParError(1)
@@ -456,7 +457,7 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
       fToUse = f2
       ConstParInd = 1
 
-      karambaSi[p].Fit(fToUse,'Q','',5,70)
+      karambaSi[p].Fit(fToUse,'Q','',5,70) # Default range: 5, 70
 
       karambaSi[p].Draw()
       karambaSi[p].SetMaximum(0.4)
@@ -736,10 +737,10 @@ if __name__ == "__main__":
       # print b[tag][0], b[tag][1]
       isBadSet = ('N200' in tag and not opt.june)
 
-      FluenceArr = np.zeros(6,dtype = float)
-      constTermsArr = np.zeros(6,dtype = float)
-      constErrasArr = np.zeros(6,dtype = float)
-      xArrZeros = np.zeros(6,dtype = float)
+      FluenceArr = np.zeros(5,dtype = float)
+      constTermsArr = np.zeros(5,dtype = float)
+      constErrasArr = np.zeros(5,dtype = float)
+      xArrZeros = np.zeros(5,dtype = float)
 
       # Now, this strange constraction will get us the sensor type (P/N, thickness)
       # and obtaine the fluence number form the JSON data:
@@ -749,18 +750,20 @@ if __name__ == "__main__":
 
       # Here we try to get the per-Pad timing resolutions
       # For the non-irradiated Pads #1 and #2, we can just devide by sqrt(2) to get individual resolution
+
+      # Setting number for SiPad1 and 2 (both non-radiated):
       if isBadSet:
         # Unfortunately the Pad2 of this set was broken. Hence just pick sensible number for thiso one:
         nonRad = 0.020
+        constErrasArr[0] = 0
       else:
         nonRad = b[tag][2]['SiPad2']/sqrt(2)
+        constErrasArr[0] = b[tag][3]['SiPad2']
 
-      # Setting number for SiPad1:
       constTermsArr[0] = nonRad
-      constErrasArr[0] = 0
       FluenceArr[0] = 0
 
-      for i,p in enumerate(['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']):
+      for i,p in enumerate(['SiPad3','SiPad4','SiPad5','SiPad6']):
 
         # Get fluences from the JSON:
         FluenceArr[i+1] = 1E-15*SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T[1:]+'um']][p]
@@ -771,15 +774,11 @@ if __name__ == "__main__":
         except:
           print "Is it negative under root?"
 
-        if isBadSet and p=='SiPad2':
-          constTermsArr[i+1] = nonRad
-          constErrasArr[i+1] = 0
-        else:
-          constErrasArr[i+1] = b[tag][3][p]
+        constErrasArr[i+1] = b[tag][3][p]
 
       constTermsArr = constTermsArr*1000
       constErrasArr  = constErrasArr*1000
-      g = TGraphErrors(6, FluenceArr, constTermsArr, xArrZeros, constErrasArr)
+      g = TGraphErrors(5, FluenceArr, constTermsArr, xArrZeros, constErrasArr)
 
       out.cd()
       g.Write(tag)
