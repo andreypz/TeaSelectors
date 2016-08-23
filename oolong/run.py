@@ -13,7 +13,8 @@ opt = parser.parse_args()
 #print opt
 
 workingPath = os.getcwd()
-parentDir =  os.path.abspath(os.path.join(workingPath, os.pardir))
+parentDir = os.path.abspath(os.path.join(workingPath, os.pardir))
+SandMpath = parentDir+"/sugar-n-milk/"
 #workingPath = '/afs/cern.ch/user/a/andrey/work/hgcal-tb/TeaSelectors/oolong/'
 
 if opt.june:
@@ -54,7 +55,7 @@ fChain = TChain("H4treeReco");
 for r in myRUNS:
     # print 'Adding the file for run=',r
     localFile =  '%s/RECO_%i.root'%(pp1,r)
-    if os.path.exists(localFile):
+    if os.path.exists(localFile) and not opt.proof:
         print 'Loading Local file, for run', r
         fChain.Add(localFile);
     else:
@@ -71,21 +72,19 @@ timer.Start()
 
 if opt.proof:
     gSystem.SetBuildDir("buildDir", kTRUE)
-    gSystem.AddIncludePath(" -I"+workingPath+"/../sugar-n-milk/");
-
+    gSystem.AddIncludePath(" -I"+SandMpath)
+    
     plite = TProof.Open("workers=4")
-    #plite.SetParameter("PROOF_LookupOpt", "none")
-    #plite.Load(workingPath+"/buildDir/HistManager_cc.so")
-    plite.Load(parentDir+"/sugar-n-milk/HistManager.cc+")
+    plite.ClearCache()
+    plite.Load(SandMpath+"HistManager.cc+")
     fChain.SetProof()
     fChain.Process("myAna.C+",'%s %s' % (jsonpath1,jsonpath2))
     fChain.SetProof(0)
 
 else:
     gSystem.SetBuildDir("buildDir", kTRUE)
-    gSystem.AddIncludePath(" -I"+parentDir+"/sugar-n-milk/");
-    #gSystem.Load("HistManager_cc.so")
-    gROOT.LoadMacro(parentDir+"/sugar-n-milk/HistManager.cc+")
+    gSystem.AddIncludePath(" -I"+SandMpath)
+    gROOT.LoadMacro(SandMpath+"/HistManager.cc+")
     fChain.Process("myAna.C+", '%s %s' % (jsonpath1,jsonpath2))
 
 print "Done!", "CPU Time: ", timer.CpuTime(), "RealTime : ", timer.RealTime()

@@ -387,6 +387,7 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
       xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X_nMiPcut'
     elif '_VS_sOvern_Pad1X' in hName:
+      #varBins = [3,10,20,30,40,50,60,70,80,90,100,110,120,130,140]
       varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
       xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X'
@@ -433,6 +434,9 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
       karambaSi[p].SetLineWidth(2)
       #print '\t My Fit result for mean: ', fMean, fMeanErr
       #print '\t  \t for sigma: ', fSigma, fSigmaErr
+
+      # These plots are not really needed, but maybe interesting for debugging:
+      # c0.SaveAs(path+'/Gauss_'+p+figName+'_bin'+str(n)+'.png')
 
     if doSigmaFit:
       # print 'Doing sigma fit on ', hName, tag
@@ -772,12 +776,15 @@ if __name__ == "__main__":
         try:
           constTermsArr[i+1] = sqrt(b[tag][2][p]**2 - nonRad**2)
         except:
-          print "Is it negative under root?"
+          print "\t WARNING: It  isnegative under the root!"
+          constTermsArr[i+1] = b[tag][2][p]/sqrt(2)
 
         constErrasArr[i+1] = b[tag][3][p]
 
+      # Get the results in picoseconds:
       constTermsArr = constTermsArr*1000
-      constErrasArr  = constErrasArr*1000
+      constErrasArr = constErrasArr*1000
+      
       g = TGraphErrors(5, FluenceArr, constTermsArr, xArrZeros, constErrasArr)
 
       out.cd()
