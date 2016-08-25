@@ -51,6 +51,8 @@ g300P.SetMarkerStyle(22)
 g300P.SetMarkerColor(kBlue+3)
 g300P.SetLineStyle(4)
 
+
+
 c1 = TCanvas("c1","small canvas",600,600);
 mg = TMultiGraph()
 mg.SetTitle('')
@@ -66,7 +68,7 @@ mg.Add(g200P,drawOpt)
 mg.Add(g300P,drawOpt)
 
 mg.SetMinimum(0)
-mg.SetMaximum(210)
+mg.SetMaximum(160)
 
 if opt.log:
     lines = []
@@ -83,7 +85,12 @@ if opt.log:
         c1.SetLogx()
         #print g.GetName()
         #g.Print()
-      
+    # Here just remove a bad point (low stats):
+    g120P.RemovePoint(3)
+else:
+    g120P.RemovePoint(4)
+
+        
 mg.Draw('A')
 mg.GetXaxis().SetTitle('Radiation, n/cm^{2} #times 10^{15}')
 mg.GetYaxis().SetTitle('Time resolution, ps')

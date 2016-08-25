@@ -406,9 +406,9 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
 
       # print n,'Doing bin:', xBins[n], xBins[n+1]
       # print ' \t which correspond to varBins:\n\t', varBins[n], varBins[n+1]
-      if proj.GetEntries()<60: # Default: 60
+      if proj.GetEntries()<200: # Default: 200
         if opt.verb:
-          print '\t WARNING: you have too few event to fit for tag:', tag
+          print '\t WARNING: you have too few events to fit for tag:', tag
           print '\t\t  nEvents = ',proj.GetEntries(),'  pad = '+p+'  bins:', xBins[n], xBins[n+1]
           print '\t I must continue without this point...'
         continue
