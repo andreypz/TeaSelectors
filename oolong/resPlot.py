@@ -23,9 +23,9 @@ fJun = TFile(opt.fJun, 'open')
 
 # There were two HV setting in the April's data: 600 and 800 V
 HV_Apr='800'
-g120N = fApr.Get('_GROUP_0_ELE_SENSOR_N120_irrHV_'+HV_Apr)
-g200N = fApr.Get('_GROUP_0_ELE_SENSOR_N200_irrHV_'+HV_Apr)
-g300N = fApr.Get('_GROUP_0_ELE_SENSOR_N300_irrHV_'+HV_Apr)
+g120N = fApr.Get('Sigma_GROUP_0_ELE_SENSOR_N120_irrHV_'+HV_Apr)
+g200N = fApr.Get('Sigma_GROUP_0_ELE_SENSOR_N200_irrHV_'+HV_Apr)
+g300N = fApr.Get('Sigma_GROUP_0_ELE_SENSOR_N300_irrHV_'+HV_Apr)
 
 g120N.SetMarkerStyle(20)
 g120N.SetMarkerColor(kRed+1)
@@ -37,9 +37,9 @@ g300N.SetMarkerStyle(22)
 g300N.SetMarkerColor(kRed+3)
 g300N.SetLineStyle(4)
 
-g120P = fJun.Get('_GROUP_0_ELE_SENSOR_P120_irrHV_800')
-g200P = fJun.Get('_GROUP_0_ELE_SENSOR_P200_irrHV_800')
-g300P = fJun.Get('_GROUP_0_ELE_SENSOR_P300_irrHV_800')
+g120P = fJun.Get('Sigma_GROUP_0_ELE_SENSOR_P120_irrHV_800')
+g200P = fJun.Get('Sigma_GROUP_0_ELE_SENSOR_P200_irrHV_800')
+g300P = fJun.Get('Sigma_GROUP_0_ELE_SENSOR_P300_irrHV_800')
 
 g120P.SetMarkerStyle(20)
 g120P.SetMarkerColor(kBlue+1)
@@ -112,4 +112,61 @@ leg.SetTextSize(0.04)
 leg.SetFillColor(kWhite)
 leg.Draw()
 
-c1.SaveAs('graph.png')
+c1.SaveAs('sigma_graph.png')
+
+
+c2 = TCanvas("c2","ratio canvas",600,700);
+c2.cd()
+pad1 = TPad("pad1","pad1",0,0.3,1,1);
+pad2 = TPad("pad2","pad2",0,0,1,0.3);
+pad1.SetBottomMargin(0)
+pad1.Draw()
+pad2.SetBottomMargin(0.25)
+pad2.SetTopMargin(0)
+pad2.Draw()
+
+
+gPadsN = {}
+gPadsP = {}
+gStyle.SetOptFit(0)
+
+for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
+    for th in ['120','200','300']:
+        if th=='200' and p=='SiPad2': continue # It does not exist for N-type
+        
+        ind=p+'_'+th
+        gPadsN[ind] = fApr.Get(p+'_GROUP_0_ELE_SENSOR_N'+th+'_irrHV_800')
+        gPadsP[ind] = fJun.Get(p+'_GROUP_0_ELE_SENSOR_P'+th+'_irrHV_800')
+        pad1.cd()
+        gPadsN[ind].Draw('e1p')
+        gPadsP[ind].Draw('e1p same')
+        gPadsN[ind].SetMaximum(0.3)
+        gPadsN[ind].SetMinimum(0.01)
+        gPadsN[ind].SetLineColor(kRed+3)
+        gPadsP[ind].SetLineColor(kBlue+3)
+
+        leg = TLegend(0.50,0.7,0.85,0.85)
+        leg.AddEntry(gPadsN[ind], th+'N '+p, 'PL')
+        leg.AddEntry(gPadsP[ind], th+'P '+p, 'PL')
+        leg.SetTextFont(42)
+        leg.SetTextSize(0.04)
+        leg.SetFillColor(kWhite)
+        leg.Draw()
+        
+        pad2.cd()
+        r=gPadsP[ind].Clone()
+        r.Divide(gPadsN[ind])
+        r.Draw()
+        r.GetFunction('f3').Delete()
+
+        r.GetYaxis().SetTitle("Ratio")
+        r.SetMaximum(1.5)
+        r.SetMinimum(0.8)
+        r.GetYaxis().SetNdivisions(206)
+        r.GetYaxis().SetTitleOffset(0.4)
+        r.SetTitleSize(0.1,"XYZ")
+        r.SetLabelSize(0.1,"XY")
+        r.SetLineColor(kBlack)
+        r.Draw("e1p")
+                                                    
+        c2.SaveAs('PvsN/PvsN_plot_'+ind+'.png')

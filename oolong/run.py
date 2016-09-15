@@ -17,11 +17,10 @@ parentDir = os.path.abspath(os.path.join(workingPath, os.pardir))
 SandMpath = parentDir+"/sugar-n-milk/"
 #workingPath = '/afs/cern.ch/user/a/andrey/work/hgcal-tb/TeaSelectors/oolong/'
 
+# Pick up different json files depending on the TB period (June or April):
 if opt.june:
     p1 = '/June2016_v2/'
-    #p1 = '/June2016_recoTrees_vSlope0/'
     p2 = "/June2016/recoTrees_v2/"
-    #p2 = "/June2016/recoTrees_vSlope0"
     jsonpath1 = workingPath+'/RunSummaryTB_June2016.json'
     jsonpath2 = workingPath+'/SiPadsConfig_June2016TB_v1.json'
 else:
@@ -70,10 +69,10 @@ for r in myRUNS:
 timer = TStopwatch()
 timer.Start()
 
-if opt.proof:
-    gSystem.SetBuildDir("buildDir", kTRUE)
-    gSystem.AddIncludePath(" -I"+SandMpath)
+gSystem.SetBuildDir("buildDir", kTRUE)
+gSystem.AddIncludePath(" -I"+SandMpath)
     
+if opt.proof:
     plite = TProof.Open("workers=4")
     plite.ClearCache()
     plite.Load(SandMpath+"HistManager.cc+")
@@ -82,8 +81,6 @@ if opt.proof:
     fChain.SetProof(0)
 
 else:
-    gSystem.SetBuildDir("buildDir", kTRUE)
-    gSystem.AddIncludePath(" -I"+SandMpath)
     gROOT.LoadMacro(SandMpath+"/HistManager.cc+")
     fChain.Process("myAna.C+", '%s %s' % (jsonpath1,jsonpath2))
 

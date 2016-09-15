@@ -38,10 +38,12 @@ if opt.june:
   outDir = './Plots-TB-June/'
   jsonFile1 = './SiPadsConfig_June2016TB_v1.json'
   jsonFile2 = './RunSummaryTB_June2016.json'
+  out = TFile("fJun.root","recreate")
 else:
   outDir = './Plots-TB-April/'
   jsonFile1 = './SiPadsConfig_April2016TB_v1.json'
   jsonFile2 = './RunSummaryTB_April2016.json'
+  out = TFile("fApr.root","recreate")
 
 with open(jsonFile1, 'r') as fp:
   SiPad_DATA = json.load(fp)
@@ -55,7 +57,6 @@ PadsCol = {"SiPad1":1, "SiPad2":47, "SiPad3":8, "SiPad4":9, "SiPad5":41, "SiPad6
 
 c1 = TCanvas("c1","small canvas",600,600);
 c2 = TCanvas("c2","small canvas",800,600);
-
 
 def createDir(myDir):
   if opt.verb: print 'Creating a new directory: ', myDir
@@ -455,11 +456,16 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
       f3 = TF1 ('f3','sqrt([0]*[0]/(x*x) + [1]*[1]/x + [2]*[2])', 2.,140.)
       f3.SetParameters(5, 0.001, 0.05)
       f3.SetParLimits(0, 0, 5)
-      f3.SetParLimits(1, 0, 0.1)
-      f3.SetParLimits(2, 0.005, 0.2)
+      f3.SetParLimits(1, 0, 3)
+      f3.SetParLimits(2, 0, 0.3)
 
-      fToUse = f2
-      ConstParInd = 1
+      # For two-parameter fit and const term:
+      #fToUse = f2
+      #ConstParInd = 1
+
+      # For three-paremeter fit
+      fToUse = f3
+      ConstParInd = None
 
       karambaSi[p].Fit(fToUse,'Q','',5,70) # Default range: 5, 70
 
@@ -472,8 +478,14 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
 
       noiseTerm[p] = fToUse.GetParameter(0)
       noiseErr[p]  = fToUse.GetParError(0)
-      constTerm[p] = fToUse.GetParameter(ConstParInd)
-      constErr[p]  = fToUse.GetParError(ConstParInd)
+
+      if ConstParInd==None:
+        # Evaluate at S/N=100:
+        constTerm[p] = fToUse.Eval(100)
+        constErr[p]  = 0.10*constTerm[p] # Set uncertainty
+      else:
+        constTerm[p] = fToUse.GetParameter(ConstParInd)
+        constErr[p]  = fToUse.GetParError(ConstParInd)
 
 
   drawOpt= 'e1p'
@@ -509,6 +521,11 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
   karambaSi['SiPad3'].SetMinimum(0.0)
   karambaSi['SiPad3'].SetMaximum(0.3)
   leg.Draw()
+
+  out.cd()
+  for p, ch in allPads.iteritems():
+    if p=='SiPad1': continue
+    karambaSi[p].Write(p+tag)
 
   drawLabel(tag)
   c0.SaveAs(path+'/KarambaSi'+figName+'.png')
@@ -713,9 +730,12 @@ if __name__ == "__main__":
     allPadsOnOnePlot(f,'PER-RUN'+'/PedestalRMS_PerRun_WithSig','',overHists=[h300,h200,h120,hPed,hPio])
 
 
-  if opt.mini:
+  elif opt.mini:
 
     import numpy as np
+
+    # Here, store the graphs of the resolution vs radiation
+    g = {}
 
     b={}
     fitData = {}
@@ -728,23 +748,16 @@ if __name__ == "__main__":
       sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_SigOverNoise',tag)
       b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, doSigmaFit=True)
 
-    # Here, store the graphs with the data
-    g = {}
-    if opt.june:
-      out = TFile("fJun.root","recreate")
-    else:
-      out = TFile("fApr.root","recreate")
-
     for tag in tags:
 
       print '\t Fit results for tag=',tag
       # print b[tag][0], b[tag][1]
       isBadSet = ('N200' in tag and not opt.june)
 
-      FluenceArr = np.zeros(5,dtype = float)
+      FluenceArr    = np.zeros(5,dtype = float)
       constTermsArr = np.zeros(5,dtype = float)
       constErrasArr = np.zeros(5,dtype = float)
-      xArrZeros = np.zeros(5,dtype = float)
+      xArrZeros     = np.zeros(5,dtype = float)
 
       # Now, this strange constraction will get us the sensor type (P/N, thickness)
       # and obtaine the fluence number form the JSON data:
@@ -757,9 +770,10 @@ if __name__ == "__main__":
 
       # Setting number for SiPad1 and 2 (both non-radiated):
       if isBadSet:
-        # Unfortunately the Pad2 of this set was broken. Hence just pick sensible number for thiso one:
-        nonRad = 0.020
-        constErrasArr[0] = 0
+        # Unfortunately the Pad2 of this set was broken. Hence just pick sensible number for this one:
+        # Use 0.020 if doing 2-param fit, and 0.017 if three param.
+        nonRad = 0.017
+        constErrasArr[0] = 0.002
       else:
         nonRad = b[tag][2]['SiPad2']/sqrt(2)
         constErrasArr[0] = b[tag][3]['SiPad2']
@@ -784,11 +798,11 @@ if __name__ == "__main__":
       # Get the results in picoseconds:
       constTermsArr = constTermsArr*1000
       constErrasArr = constErrasArr*1000
-      
+
       g = TGraphErrors(5, FluenceArr, constTermsArr, xArrZeros, constErrasArr)
 
       out.cd()
-      g.Write(tag)
+      g.Write('Sigma'+tag)
 
       for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
         try:

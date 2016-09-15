@@ -1,6 +1,6 @@
 ## How to brew it
 
-One should be able to run this code with just a couple commands:
+One should be able to run this code with just a couple commands (from lxplus or cern afs machine):
 * ```./run.py --all --proof [--june]``` - to produce the histograms (saved into a root file).
 * ```./plot.py [--june, --mini]``` - to make plots out of those histograms.
 
@@ -16,7 +16,7 @@ data. Some JSON files are different wrt April and June).
 This option must be consistent with ```-r```. That is, the run number
 should belong to June's data, e.g.  
 ```./run.py -r 4211 --june```  
-  -```--all```: run over all the runs (April's Tb by default. Use
+  - ```--all```: run over all the runs (April's Tb by default. Use
 ```--june``` to run over June's TB)  
   - ```--proof``` - finally, you can run this with PROOF!  
 This is the way to go when running over full dataset: ```./run.py --all --proof```  
@@ -28,7 +28,7 @@ This is the way to go when running over full dataset: ```./run.py --all --proof`
   * ```--beam BEAM``` - specify the beam data to plot. Options: *ELE*, *PION*, by default plots both.
   * ```--fit```   - make some fits.
   * ```--mini``` - don't make all the plots, just those under ```if opt.mini``` in the code. This option is for testing new things.
-  * ```--allruns```   - Make plots for each run separately (must be saved in the *FNAME*)  
+  * ```--allruns```   - make plots for each run separately (histograms must be saved in the *FNAME*)  
   * ```-v```   - verbosity to print more stuff. You don't want that...  
 
 * **resPlot.py** - takes as input the Root files which contain the
