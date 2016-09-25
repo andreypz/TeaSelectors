@@ -92,7 +92,7 @@ else:
 
         
 mg.Draw('A')
-mg.GetXaxis().SetTitle('Radiation, n/cm^{2} #times 10^{15}')
+mg.GetXaxis().SetTitle('Radiation dose, n/cm^{2} #times 10^{15}')
 mg.GetYaxis().SetTitle('Time resolution, ps')
 
 if opt.log:
@@ -109,9 +109,19 @@ leg.AddEntry(g300N, 'N300', 'PL')
 leg.AddEntry(g300P, 'P300', 'PL')
 leg.SetTextFont(42)
 leg.SetTextSize(0.04)
-leg.SetFillColor(kWhite)
+#leg.SetFillColor(kWhite)
 leg.Draw()
 
+if opt.log:
+    leg2 = TLegend(0.57,0.74,0.77,0.84)
+    leg2.SetHeader("Not rad.:")
+    leg2.AddEntry(lines[4],'P-type', 'L')
+    leg2.AddEntry(lines[1],'N-type', 'L')
+    leg2.SetTextFont(42)
+    leg2.SetTextSize(0.035)
+    leg2.SetBorderSize(0)
+    leg2.Draw()
+    
 c1.SaveAs('sigma_graph.png')
 
 
