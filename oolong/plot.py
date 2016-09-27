@@ -315,7 +315,7 @@ def allPadsOnOnePlot(myF, hName, tag, fit=False, overHists=None):
       if ov.GetName()=='120': ovCol = kCyan
       if ov.GetName()=='Ped': ovCol = kBlue
       if ov.GetName()=='Pio': ovCol = kGreen
-      ov.SetFillColorAlpha(ovCol, 0.2)
+      # ov.SetFillColorAlpha(ovCol, 0.2)
 
       ovleg.AddEntry(ov, ov.GetName()+' Runs','f')
 
@@ -362,7 +362,7 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
     #print 'pad', p,  suffix
     newName = hName+suffix+tag
     try:
-      h[p]=(myF.Get(newName).Clone())
+      h[p]=myF.Get(newName).Clone()
     except ReferenceError:
       if p=='SiPad1':
         if opt.verb: print '\t Well, this is the front pad Just skip it:', p
@@ -378,20 +378,20 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
     if '_VS_nMIPs' in hName:
       varBins = [0,2,3,5,7,9,11,13,15,17,19,21,23,25,27,30,35,40,45,50,60]
       xTitle = ';Number of MiPs'
-      figName = '_VS_nMIPs'
+      figName = '_VS_nMIPs'+tag
     elif '_VS_SigOverNoise' in hName:
       varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
       xTitle = ';Signal/Noise'
-      figName = '_VS_SigOverNoise'
+      figName = '_VS_SigOverNoise'+tag
     elif '_VS_sOvern_Pad1X_nMiPcut' in hName:
       varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
       xTitle = ';Effective S/N'
-      figName = '_VS_sOvern_Pad1X_nMiPcut'
+      figName = '_VS_sOvern_Pad1X_nMiPcut'+tag
     elif '_VS_sOvern_Pad1X' in hName:
-      #varBins = [3,10,20,30,40,50,60,70,80,90,100,110,120,130,140]
-      varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
+      varBins = [3,10,20,30,40,50,60,70,80,90,100,110,120,130,140]
+      #varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
       xTitle = ';Effective S/N'
-      figName = '_VS_sOvern_Pad1X'
+      figName = '_VS_sOvern_Pad1X'+tag
 
     # xBins are bin-numbers of the varBins (see conversion above)
     # It assumes that the total number of bins on the axis is 400.
@@ -615,6 +615,7 @@ if __name__ == "__main__":
   # Which plots to make:
   tags = []
 
+  print "\t First, let's remove the directory: ", outDir
   import shutil
   try:
     shutil.rmtree(outDir)
@@ -739,13 +740,12 @@ if __name__ == "__main__":
 
     b={}
     fitData = {}
-    print "\t Only doing test plots (--mini)\n First, let's remove the directory: ", outDir
     for tag in tags:
       print '\t -> Making plots for tag:', tag
       if 'GROUP_0_ELE_' not in tag: continue
 
       # sigmaPlots with fits:
-      sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_SigOverNoise',tag)
+      # sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_SigOverNoise',tag)
       b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, doSigmaFit=True)
 
     for tag in tags:

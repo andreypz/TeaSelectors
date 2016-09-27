@@ -7,6 +7,7 @@ parser =  argparse.ArgumentParser(description='Ploting my plots', usage="./resPl
 parser.add_argument("--fApr",  dest="fApr", type=str, default='fApr.root', help='there is no help')
 parser.add_argument("--fJun",  dest="fJun", type=str, default='fJun.root', help='there is no help')
 parser.add_argument("--log",  dest="log", action="store_true", default=False , help='Do logX')
+parser.add_argument("--scale",  dest="scale", type=float, default=1.0 , help='Scale down the P-type histograms')
 
 
 opt = parser.parse_args()
@@ -68,7 +69,7 @@ mg.Add(g200P,drawOpt)
 mg.Add(g300P,drawOpt)
 
 mg.SetMinimum(0)
-mg.SetMaximum(160)
+mg.SetMaximum(60)
 
 if opt.log:
     lines = []
@@ -85,10 +86,23 @@ if opt.log:
         c1.SetLogx()
         #print g.GetName()
         #g.Print()
-    # Here just remove a bad point (low stats):
+    # Here just remove th bad points (low stats):
     g120P.RemovePoint(3)
+    g120P.RemovePoint(2)
+    g120P.RemovePoint(1)
+
+    g200P.RemovePoint(3)
+
+    g300P.RemovePoint(3)
+    
 else:
     g120P.RemovePoint(4)
+    g120P.RemovePoint(3)
+    g120P.RemovePoint(2)
+
+    g200P.RemovePoint(4)
+    
+    g300P.RemovePoint(4)
 
         
 mg.Draw('A')
@@ -109,7 +123,7 @@ leg.AddEntry(g300N, 'N300', 'PL')
 leg.AddEntry(g300P, 'P300', 'PL')
 leg.SetTextFont(42)
 leg.SetTextSize(0.04)
-#leg.SetFillColor(kWhite)
+leg.SetFillColor(kWhite)
 leg.Draw()
 
 if opt.log:
@@ -120,6 +134,7 @@ if opt.log:
     leg2.SetTextFont(42)
     leg2.SetTextSize(0.035)
     leg2.SetBorderSize(0)
+    leg2.SetFillColor(kWhite)
     leg2.Draw()
     
 c1.SaveAs('sigma_graph.png')
@@ -155,6 +170,8 @@ for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
         gPadsN[ind].SetLineColor(kRed+3)
         gPadsP[ind].SetLineColor(kBlue+3)
 
+        gPadsP[ind].Scale(1./opt.scale)
+        
         leg = TLegend(0.50,0.7,0.85,0.85)
         leg.AddEntry(gPadsN[ind], th+'N '+p, 'PL')
         leg.AddEntry(gPadsP[ind], th+'P '+p, 'PL')
