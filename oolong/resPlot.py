@@ -6,8 +6,12 @@ import argparse
 parser =  argparse.ArgumentParser(description='Ploting my plots', usage="./resPlot --fP f1.root --fN f2.root")
 parser.add_argument("--fApr",  dest="fApr", type=str, default='fApr.root', help='there is no help')
 parser.add_argument("--fJun",  dest="fJun", type=str, default='fJun.root', help='there is no help')
-parser.add_argument("--log",  dest="log", action="store_true", default=False , help='Do logX')
-parser.add_argument("--scale",  dest="scale", type=float, default=1.0 , help='Scale down the P-type histograms')
+parser.add_argument("--log",  dest="log", action="store_true", default=False, help='Do logX')
+parser.add_argument("--scale",  dest="scale", type=float, default=1.0, help='Scale down the P-type histograms')
+parser.add_argument("--shift",  dest="shift", type=float, default=0.0, help='Shift down the P-type histograms, ps')
+
+parser.add_argument("--ratio",  dest="ratio", action="store_true", default=False, help='Plot ratio of P to N')
+parser.add_argument("--diff",   dest="diff", action="store_true", default=False, help='Plot difference ot P to N')
 
 
 opt = parser.parse_args()
@@ -140,17 +144,34 @@ if opt.log:
 c1.SaveAs('sigma_graph.png')
 
 
-c2 = TCanvas("c2","ratio canvas",600,700);
-c2.cd()
-pad1 = TPad("pad1","pad1",0,0.3,1,1);
-pad2 = TPad("pad2","pad2",0,0,1,0.3);
-pad1.SetBottomMargin(0)
-pad1.Draw()
-pad2.SetBottomMargin(0.25)
-pad2.SetTopMargin(0)
-pad2.Draw()
-
-
+if opt.ratio and opt.diff:
+    c2 = TCanvas("c2","ratio canvas",600,800);
+    c2.cd()
+    pad1 = TPad("pad1","pad1",0,0.34,1,  1);
+    pad2 = TPad("pad2","pad2",0,0.17,1,0.34);
+    pad3 = TPad("pad3","pad3",0,0.0,1,0.17);
+    pad1.SetBottomMargin(0.15)
+    pad1.Draw()
+    pad2.SetBottomMargin(0.07)
+    pad2.SetTopMargin(0)
+    pad2.Draw()
+    pad3.SetBottomMargin(0.07)
+    pad3.SetTopMargin(0)
+    pad3.Draw()
+elif opt.ratio or opt.diff:
+    c2 = TCanvas("c2","ratio canvas",600,700);
+    c2.cd()
+    pad1 = TPad("pad1","pad1",0,0.25,1,  1);
+    pad2 = TPad("pad2","pad2",0,  0,1,0.25);
+    pad1.SetBottomMargin(0.15)
+    pad1.Draw()
+    pad2.SetBottomMargin(0.07)
+    pad2.SetTopMargin(0)
+    pad2.Draw()
+else:
+    c2=c1
+    pad1 = c2.GetPad()
+    
 gPadsN = {}
 gPadsP = {}
 gStyle.SetOptFit(0)
@@ -170,8 +191,18 @@ for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
         gPadsN[ind].SetLineColor(kRed+3)
         gPadsP[ind].SetLineColor(kBlue+3)
 
+        gPadsP[ind].GetFunction('f3').Delete()
+        gPadsN[ind].GetFunction('f3').Delete()
+
+        # Scale P
         gPadsP[ind].Scale(1./opt.scale)
+
+        # Shift P
+        for b in range(1, gPadsP[ind].GetNbinsX()+1):
+            # print 'bin:', b
+            gPadsP[ind].SetBinContent(b, gPadsP[ind].GetBinContent(b) - opt.shift)
         
+                    
         leg = TLegend(0.50,0.7,0.85,0.85)
         leg.AddEntry(gPadsN[ind], th+'N '+p, 'PL')
         leg.AddEntry(gPadsP[ind], th+'P '+p, 'PL')
@@ -179,21 +210,56 @@ for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
         leg.SetTextSize(0.04)
         leg.SetFillColor(kWhite)
         leg.Draw()
-        
-        pad2.cd()
-        r=gPadsP[ind].Clone()
-        r.Divide(gPadsN[ind])
-        r.Draw()
-        r.GetFunction('f3').Delete()
 
-        r.GetYaxis().SetTitle("Ratio")
-        r.SetMaximum(1.5)
-        r.SetMinimum(0.8)
-        r.GetYaxis().SetNdivisions(206)
-        r.GetYaxis().SetTitleOffset(0.4)
-        r.SetTitleSize(0.1,"XYZ")
-        r.SetLabelSize(0.1,"XY")
-        r.SetLineColor(kBlack)
-        r.Draw("e1p")
+        if opt.ratio:
+            pad2.cd()
+            r=gPadsP[ind].Clone()
+            r.Divide(gPadsN[ind])
+            r.Draw()
+            #r.GetFunction('f3').Delete()
+            
+            r.GetYaxis().SetTitle("Ratio: P/N")
+            if opt.shift==0:
+                offset = 1.2/opt.scale
+            else:
+                offset = 1
+            r.SetMaximum(offset+0.29)
+            r.SetMinimum(offset-0.29)
+            r.GetYaxis().SetNdivisions(206)
+            r.GetYaxis().SetTitleOffset(0.4)
+            r.SetTitleSize(0.15,"XYZ")
+            r.SetLabelSize(0.12,"Y")
+            r.SetLabelSize(0,"X")
+            r.SetLabelOffset(999,"X")
+            
+            r.SetLineColor(kBlack)
+            r.Draw("e1p")
+        if opt.diff:
+            if opt.ratio:
+                pad3.cd()
+            else:
+                pad2.cd()
+            d=gPadsP[ind].Clone()
+            d.Add(gPadsN[ind], -1)
+            d.Draw()
+            #d.GetFunction('f3').Delete()
+            
+            d.GetYaxis().SetTitle("Diff: P-N (ns)")
+            if opt.scale==1.0:
+                offset = 0.020 - opt.shift
+            else:
+                offset = opt.shift
+                
+            d.SetMaximum(offset + 0.016)
+            d.SetMinimum(offset - 0.016)
+            d.GetYaxis().SetNdivisions(206)
+            d.GetYaxis().SetTitleOffset(0.4)
+            d.SetTitleSize(0.15,"XYZ")
+            d.SetLabelSize(0.12,"Y")
+            d.SetLabelSize(0.0,"X")
+            d.SetLabelOffset(999,"X")
+            d.SetLineColor(kBlack)
+            d.Draw("e1p")
+            
                                                     
         c2.SaveAs('PvsN/PvsN_plot_'+ind+'.png')

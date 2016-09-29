@@ -388,9 +388,10 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
       xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X_nMiPcut'+tag
     elif '_VS_sOvern_Pad1X' in hName:
-      varBins = [3,10,20,30,40,50,60,70,80,90,100,110,120,130,140]
-      #varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
-      xTitle = ';Effective S/N'
+      #varBins = [3,10,20,30,40,50,60,70,80,90,100,110,120,130,140]
+      varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
+      xTitle = ';(S_{1}/N_{1})#times(S_{n}/N_{n}) / #sqrt{(S_{1}/N_{1})^{2} + (S_{n}/N_{n})^{2}}'
+      #xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X'+tag
 
     # xBins are bin-numbers of the varBins (see conversion above)
@@ -509,6 +510,7 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
   leg.Draw()
 
   drawLabel(tag)
+
   c0.SaveAs(path+'/KarambaMe'+figName+'.png')
 
 
@@ -520,7 +522,29 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
   karambaSi['SiPad6'].Draw(drawOpt+' same')
   karambaSi['SiPad3'].SetMinimum(0.0)
   karambaSi['SiPad3'].SetMaximum(0.3)
-  leg.Draw()
+
+  #leg.Draw()
+  #leg.Clear()
+  karambaSi['SiPad3'].SetTitleSize(0.04,"X")
+  karambaSi['SiPad3'].SetTitleOffset(1.3, "X")
+
+  leg2 = TLegend(0.73,0.66,0.92,0.90)
+  if '120' in tag:
+    T = '120'
+  elif '200' in tag:
+    T='200'
+  elif '300' in tag:
+    T = '300'
+
+  leg2.SetHeader('  Fluence:')
+  if not isBadSet:
+    leg2.AddEntry(karambaMe["SiPad2"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad2']), "l")
+  leg2.AddEntry(karambaMe["SiPad3"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad3']), "l")
+  leg2.AddEntry(karambaMe["SiPad4"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad4']), "l")
+  leg2.AddEntry(karambaMe["SiPad5"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad5']), "l")
+  leg2.AddEntry(karambaMe["SiPad6"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad6']), "l")
+  leg2.SetFillColor(kWhite)
+  leg2.Draw()
 
   out.cd()
   for p, ch in allPads.iteritems():
@@ -529,6 +553,7 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
 
   drawLabel(tag)
   c0.SaveAs(path+'/KarambaSi'+figName+'.png')
+  c0.SaveAs(path+'/KarambaSi'+figName+'.pdf')
 
 
   if doSigmaFit: return noiseTerm, noiseErr, constTerm, constErr
