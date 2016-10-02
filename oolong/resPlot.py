@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 # This script will take the TGraphs from the input files and plot them
-
 import argparse
 parser =  argparse.ArgumentParser(description='Ploting my plots', usage="./resPlot --fP f1.root --fN f2.root")
 parser.add_argument("--fApr",  dest="fApr", type=str, default='fApr.root', help='there is no help')
@@ -11,8 +10,7 @@ parser.add_argument("--scale",  dest="scale", type=float, default=1.0, help='Sca
 parser.add_argument("--shift",  dest="shift", type=float, default=0.0, help='Shift down the P-type histograms, ps')
 
 parser.add_argument("--ratio",  dest="ratio", action="store_true", default=False, help='Plot ratio of P to N')
-parser.add_argument("--diff",   dest="diff", action="store_true", default=False, help='Plot difference ot P to N')
-
+parser.add_argument("--diff",   dest="diff", action="store_true",  default=False, help='Plot difference ot P to N')
 
 opt = parser.parse_args()
 
@@ -22,11 +20,9 @@ gROOT.ProcessLine(".L ../sugar-n-milk/tdrstyle.C")
 setTDRStyle()
 gROOT.ForceStyle()
 
-
 fApr = TFile(opt.fApr, 'open')
 fJun = TFile(opt.fJun, 'open')
 
-# There were two HV setting in the April's data: 600 and 800 V
 HV_Apr='800'
 g120N = fApr.Get('Sigma_GROUP_0_ELE_SENSOR_N120_irrHV_'+HV_Apr)
 g200N = fApr.Get('Sigma_GROUP_0_ELE_SENSOR_N200_irrHV_'+HV_Apr)
@@ -63,7 +59,7 @@ mg = TMultiGraph()
 mg.SetTitle('')
 
 drawOpt = 'PL E1'
-#if opt.log: 
+#if opt.log:
 #    drawOpt = 'P E1'
 mg.Add(g120N,drawOpt)
 mg.Add(g200N,drawOpt)
@@ -98,17 +94,17 @@ if opt.log:
     g200P.RemovePoint(3)
 
     g300P.RemovePoint(3)
-    
+
 else:
     g120P.RemovePoint(4)
     g120P.RemovePoint(3)
     g120P.RemovePoint(2)
 
     g200P.RemovePoint(4)
-    
+
     g300P.RemovePoint(4)
 
-        
+
 mg.Draw('A')
 mg.GetXaxis().SetTitle('Radiation dose, n/cm^{2} #times 10^{15}')
 mg.GetYaxis().SetTitle('Time resolution, ps')
@@ -140,7 +136,7 @@ if opt.log:
     leg2.SetBorderSize(0)
     leg2.SetFillColor(kWhite)
     leg2.Draw()
-    
+
 c1.SaveAs('sigma_graph.png')
 
 
@@ -170,8 +166,9 @@ elif opt.ratio or opt.diff:
     pad2.Draw()
 else:
     c2=c1
-    pad1 = c2.GetPad()
-    
+    if not opt.log: c2.SetLog(0)
+    pad1 = c2.GetPad(0)
+
 gPadsN = {}
 gPadsP = {}
 gStyle.SetOptFit(0)
@@ -179,7 +176,7 @@ gStyle.SetOptFit(0)
 for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
     for th in ['120','200','300']:
         if th=='200' and p=='SiPad2': continue # It does not exist for N-type
-        
+
         ind=p+'_'+th
         gPadsN[ind] = fApr.Get(p+'_GROUP_0_ELE_SENSOR_N'+th+'_irrHV_800')
         gPadsP[ind] = fJun.Get(p+'_GROUP_0_ELE_SENSOR_P'+th+'_irrHV_800')
@@ -201,8 +198,8 @@ for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
         for b in range(1, gPadsP[ind].GetNbinsX()+1):
             # print 'bin:', b
             gPadsP[ind].SetBinContent(b, gPadsP[ind].GetBinContent(b) - opt.shift)
-        
-                    
+
+
         leg = TLegend(0.50,0.7,0.85,0.85)
         leg.AddEntry(gPadsN[ind], th+'N '+p, 'PL')
         leg.AddEntry(gPadsP[ind], th+'P '+p, 'PL')
@@ -217,7 +214,7 @@ for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
             r.Divide(gPadsN[ind])
             r.Draw()
             #r.GetFunction('f3').Delete()
-            
+
             r.GetYaxis().SetTitle("Ratio: P/N")
             if opt.shift==0:
                 offset = 1.2/opt.scale
@@ -231,7 +228,7 @@ for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
             r.SetLabelSize(0.12,"Y")
             r.SetLabelSize(0,"X")
             r.SetLabelOffset(999,"X")
-            
+
             r.SetLineColor(kBlack)
             r.Draw("e1p")
         if opt.diff:
@@ -243,13 +240,13 @@ for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
             d.Add(gPadsN[ind], -1)
             d.Draw()
             #d.GetFunction('f3').Delete()
-            
+
             d.GetYaxis().SetTitle("Diff: P-N (ns)")
             if opt.scale==1.0:
                 offset = 0.020 - opt.shift
             else:
                 offset = opt.shift
-                
+
             d.SetMaximum(offset + 0.016)
             d.SetMinimum(offset - 0.016)
             d.GetYaxis().SetNdivisions(206)
@@ -260,6 +257,6 @@ for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
             d.SetLabelOffset(999,"X")
             d.SetLineColor(kBlack)
             d.Draw("e1p")
-            
-                                                    
+
+
         c2.SaveAs('PvsN/PvsN_plot_'+ind+'.png')

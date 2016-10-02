@@ -180,17 +180,24 @@ def allPadsOnOnePlot(myF, hName, tag, fit=False, overHists=None):
   for p, ch in allPads.iteritems():
     suffix = '_'+p+'_ch'+str(ch)
     #print 'pad', p,  suffix
+
     newName = hName+suffix+tag
+    # DEBUGGING for ROOT 6.06:
+    #xx = myF.Get(newName)
+    #print xx
+    #print type( xx)
+
     try:
-      h[p]=(myF.Get(newName).Clone())
+      h[p]=myF.Get(newName).Clone()  
     except ReferenceError:
       if p=='SiPad1' or (p=='SiPad2' and isBadSet):
         if opt.verb: print '\t Well, this is the front pad Just skip it:', p
         continue
       else:
         print 'Looks like this hist does not exist:', newName
-        print '\t *** --> This is no good.. <-- ***'
-        return
+        print '\t *** --> This is no good.. <-- *** \n'
+        sys.exit(0)
+        #return
 
     h[p].SetLineColor(PadsCol[p])
     h[p].SetLineWidth(2)
