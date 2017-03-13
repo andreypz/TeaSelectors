@@ -143,7 +143,7 @@ def onePerTag(myF, hName, tag):
   if opt.verb: print "\t Making plots for ->", hName
   c0=c1
   c0.cd()
-  newName = hName+tag
+  newName = str(hName+tag)
 
   try:
     h1 = myF.Get(newName).Clone()
@@ -174,19 +174,14 @@ def allPadsOnOnePlot(myF, hName, tag, fit=False, overHists=None):
   else: c0=c1
   c0.cd()
 
-
   h = {}
   hmaxima=[]
   for p, ch in allPads.iteritems():
     suffix = '_'+p+'_ch'+str(ch)
     #print 'pad', p,  suffix
 
-    newName = hName+suffix+tag
-    # DEBUGGING for ROOT 6.06:
-    #xx = myF.Get(newName)
-    #print xx
-    #print type( xx)
-
+    newName = str(hName+suffix+tag)
+    
     try:
       h[p]=myF.Get(newName).Clone()  
     except ReferenceError:
@@ -367,7 +362,7 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
     #suffix = p+'_ch'+str(ch)
     suffix = '_'+p+'_ch'+str(ch)
     #print 'pad', p,  suffix
-    newName = hName+suffix+tag
+    newName = str(hName+suffix+tag)
     try:
       h[p]=myF.Get(newName).Clone()
     except ReferenceError:
@@ -377,7 +372,8 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
       else:
         print 'Looks like this hist does not exist:', newName
         print '\t *** --> This is no good.. <-- ***'
-        return
+        sys.exit(0)
+        # return
 
     path = outDir+'Projects'+tag
     createDir(path)
@@ -582,7 +578,7 @@ def effPlot(myF, tag):
 
   for p, ch in allPads.iteritems():
     suffix = p+'_ch'+str(ch)
-    newName = 'Events'+tag+'/nEvents'+suffix+tag
+    newName = str('Events'+tag+'/nEvents'+suffix+tag)
     try:
       h[p]=(myF.Get(newName).Clone())
     except ReferenceError:
@@ -642,6 +638,7 @@ def effPlot(myF, tag):
 
 if __name__ == "__main__":
   print "This is the __main__ part"
+
   f = TFile(opt.fname,'OPEN')
 
   # Which plots to make:

@@ -8,6 +8,7 @@ parser.add_argument("-r",  dest="RUNS", type=int, nargs='+', help="Run Numbers t
 parser.add_argument("--proof",  dest="proof", action="store_true", default=False,  help="Run this thing with PROOF!")
 parser.add_argument("--all", dest="all", action="store_true", default=False, help="Run over all!")
 parser.add_argument("--june", dest="june", action="store_true", default=False, help="Run over June's Data.")
+parser.add_argument("-j", dest="nworkers", type=int, default=4, help="Number of workers to use, when doing Proof.")
 
 opt = parser.parse_args()
 #print opt
@@ -34,7 +35,7 @@ pp2 = "root://eoscms//eos/cms/store/group/upgrade/HGCAL/TimingTB_H2_Apr2016/"+p2
 
 # Here we read EOS to get the filenames:
 import subprocess
-eos = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select'
+eos = '/afs/cern.ch/project/eos/installation/0.3.121-aquamarine/bin/eos.select'
 pop = subprocess.Popen(eos+' ls /store/group/upgrade/HGCAL/TimingTB_H2_Apr2016/'+p2,
                           shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 retval = pop.wait()
@@ -73,7 +74,9 @@ gSystem.SetBuildDir("buildDir", kTRUE)
 gSystem.AddIncludePath(" -I"+SandMpath)
     
 if opt.proof:
-    plite = TProof.Open("workers=4")
+    plite = TProof.Open("workers=%i"%opt.nworkers)
+    #plite.SetProgressDialog(0)
+    #plite.SetBit(TProof.kUsingSessionGui)
     plite.ClearCache()
     plite.Load(SandMpath+"HistManager.cc+")
     fChain.SetProof()
