@@ -17,6 +17,10 @@ parser.add_argument("--beam",  dest="beam", nargs='+', default=['ELE','PION'],
                     help="Specify which BEAM data we should run")
 parser.add_argument("--allruns",  dest="allruns", action="store_true", default=False,
                     help="Make the plots for each run (they shold be present in the input file)")
+parser.add_argument("--syst",  dest="syst", action="store_true", default=False,
+                    help="Do systematcis on sigma plots")
+parser.add_argument("--log",  dest="log", action="store_true", default=False,
+                    help="Make some plots in log scale")
 
 opt = parser.parse_args()
 #print opt
@@ -24,6 +28,7 @@ opt = parser.parse_args()
 import sys,os,json
 from math import sqrt
 from array import array
+import numpy as np
 from ROOT import *
 gROOT.SetBatch()
 gROOT.ProcessLine(".L ../sugar-n-milk/tdrstyle.C")
@@ -348,7 +353,7 @@ def drawLabel(tag):
     label.DrawText(0.05, 0.95, tag)
 
 
-def sigmaPlot(myF, hName, tag, doSigmaFit=False):
+def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
   if opt.verb: print "\t Making Sigma plots for ->", hName
   isBadSet = ('N200' in tag and not opt.june)
 
@@ -403,8 +408,8 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
     # print 'varBins:\n \t', varBins
     # print 'xBins:\n \t', xBins
 
-    karambaMe[p] = TH1D('Mean'+p,xTitle+";Mean of (t_{N} - t_{1}), ns", len(varBins)-1,array('d',varBins))
-    karambaSi[p] = TH1D('Sigma'+p,xTitle+";#sigma(t_{N} - t_{1}), ns",  len(varBins)-1,array('d',varBins))
+    karambaMe[p] = TH1D('Mean' +p,xTitle+";Mean of (t_{N} - t_{1}), ns", len(varBins)-1,array('d',varBins))
+    karambaSi[p] = TH1D('Sigma'+p,xTitle+";#sigma(t_{N} - t_{1}), ns",   len(varBins)-1,array('d',varBins))
 
     for n in range(1,len(xBins)-1):
       proj = h[p].ProjectionY("", xBins[n], xBins[n+1]-1)
@@ -423,15 +428,36 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
       FitRangeSigma = 3 # Default: 3
       proj.Fit('gaus','Q','', m-FitRangeSigma*r, m+FitRangeSigma*r)
       f = proj.GetFunction('gaus')
-      fMean = f.GetParameter(1)
+      fMean    = f.GetParameter(1)
       fMeanErr = f.GetParError(1)
-      fSigma = f.GetParameter(2)
+      fSigma    = f.GetParameter(2)
       fSigmaErr = f.GetParError(2)
 
       karambaMe[p].SetBinContent(n+1,fMean)
       karambaMe[p].SetBinError(n+1,fMeanErr)
+
       karambaSi[p].SetBinContent(n+1,fSigma)
-      karambaSi[p].SetBinError(n+1,fSigmaErr)
+
+      if not opt.syst:
+        karambaSi[p].SetBinError(n+1,fSigmaErr)
+      elif len(sysFiles)==0:
+        print 'No syst files provided to do systematics... Will take the fit uncerrtainty.'
+        karambaSi[p].SetBinError(n+1,fSigmaErr)
+      else:
+        fTotErr = 0 # Total error in percent
+        if fSigma!=0:
+          syst = [fSigmaErr/fSigma]
+          for sF in sysFiles:
+            # print sF
+            hSys = sF.Get(str(p+tag))
+            sDiff = fSigma - hSys.GetBinContent(n+1)
+            syst.append(sDiff/fSigma)
+          s = np.array(syst)
+          print p, n, s
+          fTotErr = np.sqrt(np.sum(np.square(s)))
+          print '\t fTotErr=', fTotErr
+
+        karambaSi[p].SetBinError(n+1,fTotErr*fSigma)
 
       karambaMe[p].SetLineColor(PadsCol[p])
       karambaMe[p].SetLineWidth(2)
@@ -451,33 +477,38 @@ def sigmaPlot(myF, hName, tag, doSigmaFit=False):
       # Two parameters fit
 
       f2 = TF1 ('f2','sqrt([0]*[0]/(x*x) + [1]*[1])', 2,140.)
-      f2.SetParameters(5, 0.001, 0.05)
-      f2.SetParLimits(0, 0, 5)
+      f2.SetParameters(1, 0.03)
+      f2.SetParLimits(0, 0, 3)
       f2.SetParLimits(1, 0, 0.2)
 
       # Three parameters fit:
 
       f3 = TF1 ('f3','sqrt([0]*[0]/(x*x) + [1]*[1]/x + [2]*[2])', 2.,140.)
-      f3.SetParameters(5, 0.001, 0.05)
-      f3.SetParLimits(0, 0, 5)
-      f3.SetParLimits(1, 0, 3)
-      f3.SetParLimits(2, 0, 0.3)
+      f3.SetParameters(1, 0.3, 0.03)
+      f3.SetParLimits(0, 0, 3)
+      f3.SetParLimits(1, 0, 1)
+      f3.SetParLimits(2, 0., 0.3)
 
       # For two-parameter fit and const term:
-      #fToUse = f2
-      #ConstParInd = 1
+      fToUse = f2
+      ConstParInd = 1
 
       # For three-paremeter fit
-      fToUse = f3
-      ConstParInd = None
+      #fToUse = f3
+      #ConstParInd = None
 
-      karambaSi[p].Fit(fToUse,'Q','',5,70) # Default range: 5, 70
+      fitRange = [5,140] # Default range: 5, 70
+      karambaSi[p].Fit(fToUse,'QI','',fitRange[0],fitRange[1])
 
       karambaSi[p].Draw()
       karambaSi[p].SetMaximum(0.4)
       karambaSi[p].SetMinimum(0.0)
+      fToUse.SetRange(fitRange[0], fitRange[1])
       fToUse.Draw("same")
-      c0_2.SaveAs(path+'/SJ_fit_SOverN'+figName+"_"+p+'.png')
+      if opt.log:
+        c0_2.SetLogy()
+        karambaSi[p].SetMinimum(0.01)
+      c0_2.SaveAs(path+'/SigmaFit_SOverN'+figName+"_"+p+'.png')
       # c0_2.SaveAs(path+'/SJ_fit_SOverN_'+p+'.C')
 
       noiseTerm[p] = fToUse.GetParameter(0)
@@ -762,21 +793,31 @@ if __name__ == "__main__":
 
   elif opt.mini:
 
-    import numpy as np
-
     # Here, store the graphs of the resolution vs radiation
-    g = {}
+    b = {}
 
-    b={}
-    fitData = {}
     for tag in tags:
       print '\t -> Making plots for tag:', tag
       if 'GROUP_0_ELE_' not in tag: continue
 
+      fs = []
+      # This one includes systematics:
+      if opt.syst:
+        Month = 'fApr'
+        if opt.june:
+          Month = 'fJun'
+        if opt.syst:
+          #fs.append(TFile(Month+'_default.root','read'))
+          fs.append(TFile(Month+'_1p5rms.root','read'))
+          fs.append(TFile(Month+'_4rms.root',  'read'))
+          fs.append(TFile(Month+'_Nev60.root', 'read'))
+          #fs.append(TFile(Month+'_Nev300.root', 'read'))
+          
       # sigmaPlots with fits:
       # sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_SigOverNoise',tag)
-      b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, doSigmaFit=True)
-
+      b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, fs, doSigmaFit=True)
+      
+      
     for tag in tags:
 
       print '\t Fit results for tag=',tag
@@ -796,7 +837,6 @@ if __name__ == "__main__":
 
       # Here we try to get the per-Pad timing resolutions
       # For the non-irradiated Pads #1 and #2, we can just devide by sqrt(2) to get individual resolution
-
       # Setting number for SiPad1 and 2 (both non-radiated):
       if isBadSet:
         # Unfortunately the Pad2 of this set was broken. Hence just pick sensible number for this one:
@@ -819,7 +859,7 @@ if __name__ == "__main__":
         try:
           constTermsArr[i+1] = sqrt(b[tag][2][p]**2 - nonRad**2)
         except:
-          print "\t WARNING: It  isnegative under the root!"
+          print "\t WARNING: It is negative under the root!"
           constTermsArr[i+1] = b[tag][2][p]/sqrt(2)
 
         constErrasArr[i+1] = b[tag][3][p]

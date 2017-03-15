@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from ROOT import *
 import os,json
+gROOT.SetBatch()
 
 import argparse
 parser =  argparse.ArgumentParser(description='Ploting my plots', usage="./run.py -r RUN")
@@ -75,8 +76,6 @@ gSystem.AddIncludePath(" -I"+SandMpath)
     
 if opt.proof:
     plite = TProof.Open("workers=%i"%opt.nworkers)
-    #plite.SetProgressDialog(0)
-    #plite.SetBit(TProof.kUsingSessionGui)
     plite.ClearCache()
     plite.Load(SandMpath+"HistManager.cc+")
     fChain.SetProof()
