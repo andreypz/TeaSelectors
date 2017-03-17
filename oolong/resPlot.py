@@ -100,6 +100,7 @@ if __name__ == "__main__":
     g200P = grP[1]
     g300P = grP[2]
 
+    g300N.Print()
     ## -----
     ## The main result:
 

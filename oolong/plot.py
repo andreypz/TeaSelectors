@@ -398,7 +398,9 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
     elif '_VS_sOvern_Pad1X' in hName:
       #varBins = [3,10,20,30,40,50,60,70,80,90,100,110,120,130,140]
       varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
-      xTitle = ';(S_{1}/N_{1})#times(S_{n}/N_{n}) / #sqrt{(S_{1}/N_{1})^{2} + (S_{n}/N_{n})^{2}}'
+      lo = '0.3'
+      xTitle = ';(S_{1}/N_{1})#times(S#lower[%s]{#font[12]{i}}/N#lower[%s]{#font[12]{i}}) / #sqrt{(S_{1}/N_{1})^{2} + (S#lower[%s]{#font[12]{i}}/N#lower[%s]{#font[12]{i}})^{2}}' %(lo,lo,lo,lo)
+      #xTitle = ';(S_{1}/N_{1})\\times(S_{i} /N_{i}) \\sqrt{(S_{1}/N_{1})^{2} + (S_{i} /N_{i})^{2}}'
       #xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X'+tag
 
@@ -408,8 +410,8 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
     # print 'varBins:\n \t', varBins
     # print 'xBins:\n \t', xBins
 
-    karambaMe[p] = TH1D('Mean' +p,xTitle+";Mean of (t_{N} - t_{1}), ns", len(varBins)-1,array('d',varBins))
-    karambaSi[p] = TH1D('Sigma'+p,xTitle+";#sigma(t_{N} - t_{1}), ns",   len(varBins)-1,array('d',varBins))
+    karambaMe[p] = TH1D('Mean' +p,xTitle+";Mean of (t_{i} - t_{1}), ns", len(varBins)-1,array('d',varBins))
+    karambaSi[p] = TH1D('Sigma'+p,xTitle+";sigma(t_{#font[12]{i}} - t_{1}), ns",   len(varBins)-1,array('d',varBins))
 
     for n in range(1,len(xBins)-1):
       proj = h[p].ProjectionY("", xBins[n], xBins[n+1]-1)
@@ -425,7 +427,7 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
 
       m = proj.GetMean()
       r = proj.GetRMS()
-      FitRangeSigma = 3 # Default: 3
+      FitRangeSigma = 2 # Default: 2
       proj.Fit('gaus','Q','', m-FitRangeSigma*r, m+FitRangeSigma*r)
       f = proj.GetFunction('gaus')
       fMean    = f.GetParameter(1)
@@ -453,9 +455,9 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
             sDiff = fSigma - hSys.GetBinContent(n+1)
             syst.append(sDiff/fSigma)
           s = np.array(syst)
-          print p, n, s
+          # print p, n, s
           fTotErr = np.sqrt(np.sum(np.square(s)))
-          print '\t fTotErr=', fTotErr
+          # print '\t fTotErr=', fTotErr
 
         karambaSi[p].SetBinError(n+1,fTotErr*fSigma)
 
@@ -490,14 +492,14 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
       f3.SetParLimits(2, 0., 0.3)
 
       # For two-parameter fit and const term:
-      fToUse = f2
-      ConstParInd = 1
+      #fToUse = f2
+      #ConstParInd = 1
 
       # For three-paremeter fit
-      #fToUse = f3
-      #ConstParInd = None
+      fToUse = f3
+      ConstParInd = None
 
-      fitRange = [5,140] # Default range: 5, 70
+      fitRange = [5,70] # Default range: 5, 70
       karambaSi[p].Fit(fToUse,'QI','',fitRange[0],fitRange[1])
 
       karambaSi[p].Draw()
@@ -508,21 +510,36 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
       if opt.log:
         c0_2.SetLogy()
         karambaSi[p].SetMinimum(0.01)
-      c0_2.SaveAs(path+'/SigmaFit_SOverN'+figName+"_"+p+'.png')
-      # c0_2.SaveAs(path+'/SJ_fit_SOverN_'+p+'.C')
 
+      confidInt = TH1D("confidInt", "Fitted func with .95 conf.band", 200, fitRange[0], 110)
+      TVirtualFitter.GetFitter().GetConfidenceIntervals(confidInt, 0.95);
+      confidInt.SetStats(kFALSE)
+      confidInt.SetFillColor(2)
+      confidInt.Draw("e3 same")
+      
+      c0_2.SaveAs(path+'/SigmaFit_SOverN'+figName+"_"+p+'.png')
+      
       noiseTerm[p] = fToUse.GetParameter(0)
       noiseErr[p]  = fToUse.GetParError(0)
 
       if ConstParInd==None:
-        # Evaluate at S/N=100:
+        # When the const term is not reliable, let's just evaluate the function at S/N=100:
         constTerm[p] = fToUse.Eval(100)
-        constErr[p]  = 0.10*constTerm[p] # Set uncertainty
+        #constTerm[p] = confidInt.GetBinContent(confidInt.FindBin(100))
+        # Assign the error from Confidence interval thingy
+        constErr[p] = confidInt.GetBinError(confidInt.FindBin(100))
+        
+        # If can't be helped, set it to 10% uncertainty:
+        #constErr[p]  = 0.10*constTerm[p]
+
       else:
         constTerm[p] = fToUse.GetParameter(ConstParInd)
         constErr[p]  = fToUse.GetParError(ConstParInd)
 
-
+      confidInt.Delete()
+    # <-- if dosigmafit indent
+  # <-- for p, ch indent
+  
   drawOpt= 'e1p'
   karambaMe['SiPad3'].Draw(drawOpt)
   if not isBadSet:
@@ -566,7 +583,7 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
   if '120' in tag:
     T = '120'
   elif '200' in tag:
-    T='200'
+    T = '200'
   elif '300' in tag:
     T = '300'
 
@@ -809,8 +826,8 @@ if __name__ == "__main__":
         if opt.syst:
           #fs.append(TFile(Month+'_default.root','read'))
           fs.append(TFile(Month+'_1p5rms.root','read'))
-          fs.append(TFile(Month+'_4rms.root',  'read'))
-          fs.append(TFile(Month+'_Nev60.root', 'read'))
+          fs.append(TFile(Month+'_3rms.root',  'read'))
+          fs.append(TFile(Month+'_Nev50.root', 'read'))
           #fs.append(TFile(Month+'_Nev300.root', 'read'))
           
       # sigmaPlots with fits:
@@ -820,8 +837,15 @@ if __name__ == "__main__":
       
     for tag in tags:
 
-      print '\t Fit results for tag=',tag
-      # print b[tag][0], b[tag][1]
+      print '\t Fit results for tag:',tag
+      print b[tag][2]
+
+      for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
+        try:
+          print "%s, %.3f +/- %.3f \t %.3f +/- %.3f" % (p, b[tag][0][p], b[tag][1][p], b[tag][2][p], b[tag][3][p])
+        except KeyError:
+          print 'Key error exception for pad:', p
+
       isBadSet = ('N200' in tag and not opt.june)
 
       FluenceArr    = np.zeros(5,dtype = float)
@@ -841,8 +865,8 @@ if __name__ == "__main__":
       if isBadSet:
         # Unfortunately the Pad2 of this set was broken. Hence just pick sensible number for this one:
         # Use 0.020 if doing 2-param fit, and 0.017 if three param.
-        nonRad = 0.017
-        constErrasArr[0] = 0.002
+        nonRad = 0.016
+        constErrasArr[0] = 0.003
       else:
         nonRad = b[tag][2]['SiPad2']/sqrt(2)
         constErrasArr[0] = b[tag][3]['SiPad2']
@@ -862,7 +886,16 @@ if __name__ == "__main__":
           print "\t WARNING: It is negative under the root!"
           constTermsArr[i+1] = b[tag][2][p]/sqrt(2)
 
-        constErrasArr[i+1] = b[tag][3][p]
+        # Propagate errors:
+        # TODO TODO TODO
+        print i, p
+        print b[tag][2]
+        print b[tag][3]
+        a = b[tag][2][p]
+        b = nonRad
+        s_a = float(b[tag][3][p])
+        s_b = constErrasArr[0] 
+        constErrasArr[i+1] = (1./bconstTermsArr[i+1])*sqrt( (a*s_a)**2 + (b*s_b)**2)
 
       # Get the results in picoseconds:
       constTermsArr = constTermsArr*1000
@@ -872,9 +905,3 @@ if __name__ == "__main__":
 
       out.cd()
       g.Write('Sigma'+tag)
-
-      for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
-        try:
-          print "%s, %.3f +/- %.3f \t %.3f +/- %.3f" % (p, b[tag][0][p], b[tag][1][p], b[tag][2][p], b[tag][3][p])
-        except KeyError:
-          print 'Key error exception for pad:', p
