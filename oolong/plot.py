@@ -891,11 +891,11 @@ if __name__ == "__main__":
           constTermsArr[i+1] = b[tag][2][p]/sqrt(2)
 
         # Propagate errors:
-        # TODO TODO TODO
-        S1 = b[tag][2][p]
-        S2 = nonRad
+        S1 = b[tag][2][p]  # Total (convaluted) value
+        S2 = nonRad        # Resolution of non-radiated diode
         S1_er = b[tag][3][p]
-        S2_er = constErrasArr[0] 
+        S2_er = constErrasArr[0]
+        # Error on deconvoluted value of the radiated diode resolution:
         constErrasArr[i+1] = (1./constTermsArr[i+1])*sqrt( (S1*S1_er)**2 + (S2*S2_er)**2)
 
       # Get the results in picoseconds:
