@@ -364,6 +364,7 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
   karambaMe, karambaSi = {}, {}
   constTerm, noiseTerm, noiseErr, constErr = {}, {}, {}, {}
   for p, ch in allPads.iteritems():
+    p=str(p)
     #suffix = p+'_ch'+str(ch)
     suffix = '_'+p+'_ch'+str(ch)
     #print 'pad', p,  suffix
@@ -838,7 +839,10 @@ if __name__ == "__main__":
     for tag in tags:
 
       print '\t Fit results for tag:',tag
-      print b[tag][2]
+      #print 0, b[tag]
+      #print 1, b[tag][1]
+      #print 2, b[tag][2]
+      #print 3, b[tag][3]
 
       for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
         try:
@@ -875,7 +879,7 @@ if __name__ == "__main__":
       FluenceArr[0] = 0
 
       for i,p in enumerate(['SiPad3','SiPad4','SiPad5','SiPad6']):
-
+        
         # Get fluences from the JSON:
         FluenceArr[i+1] = 1E-15*SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T[1:]+'um']][p]
 
@@ -883,19 +887,16 @@ if __name__ == "__main__":
         try:
           constTermsArr[i+1] = sqrt(b[tag][2][p]**2 - nonRad**2)
         except:
-          print "\t WARNING: It is negative under the root!"
+          print "\t WARNING: It is negative under the root!", p
           constTermsArr[i+1] = b[tag][2][p]/sqrt(2)
 
         # Propagate errors:
         # TODO TODO TODO
-        print i, p
-        print b[tag][2]
-        print b[tag][3]
-        a = b[tag][2][p]
-        b = nonRad
-        s_a = float(b[tag][3][p])
-        s_b = constErrasArr[0] 
-        constErrasArr[i+1] = (1./bconstTermsArr[i+1])*sqrt( (a*s_a)**2 + (b*s_b)**2)
+        S1 = b[tag][2][p]
+        S2 = nonRad
+        S1_er = b[tag][3][p]
+        S2_er = constErrasArr[0] 
+        constErrasArr[i+1] = (1./constTermsArr[i+1])*sqrt( (S1*S1_er)**2 + (S2*S2_er)**2)
 
       # Get the results in picoseconds:
       constTermsArr = constTermsArr*1000
