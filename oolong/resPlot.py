@@ -86,10 +86,10 @@ if __name__ == "__main__":
 
     # Get the graphs
 
-    fN = TFile('syst_backupMar20_2par/fApr_default.root', 'read')
-    fP = TFile('syst_backupMar20_2par/fJun_default.root', 'read')
-    #fN = TFile('fApr_default.root', 'read')
-    #fP = TFile('fJun_default.root', 'read')
+    #fN = TFile('syst_backupMar20_2par/fApr_default.root', 'read')
+    #fP = TFile('syst_backupMar20_2par/fJun_default.root', 'read')
+    fN = TFile('fApr_default.root', 'read')
+    fP = TFile('fJun_default.root', 'read')
 
     grN = getSigmaFinalFits(fN,'N')
     grP = getSigmaFinalFits(fP,'P')

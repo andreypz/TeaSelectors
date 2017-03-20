@@ -873,7 +873,7 @@ if __name__ == "__main__":
         constErrasArr[0] = 0.003
       else:
         nonRad = b[tag][2]['SiPad2']/sqrt(2)
-        constErrasArr[0] = b[tag][3]['SiPad2']
+        constErrasArr[0] = b[tag][3]['SiPad2']/sqrt(2)
 
       constTermsArr[0] = nonRad
       FluenceArr[0] = 0
