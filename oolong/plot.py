@@ -512,11 +512,11 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
         c0_2.SetLogy()
         karambaSi[p].SetMinimum(0.01)
 
-      confidInt = TH1D("confidInt", "Fitted func with .95 conf.band", 200, fitRange[0], 110)
-      TVirtualFitter.GetFitter().GetConfidenceIntervals(confidInt, 0.95);
+      confidInt = TH1D("confidInt", "Fitted func with conf. band", 200, fitRange[0], 110)
+      TVirtualFitter.GetFitter().GetConfidenceIntervals(confidInt, 0.68);
       confidInt.SetStats(kFALSE)
       confidInt.SetFillColor(2)
-      confidInt.Draw("e3 same")
+      # confidInt.Draw("e3 same")
       
       c0_2.SaveAs(path+'/SigmaFit_SOverN'+figName+"_"+p+'.png')
       

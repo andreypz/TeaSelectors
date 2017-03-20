@@ -79,16 +79,17 @@ def diffGraphs(gr1, gr2):
             print 'Warning the x-values must always agree...'
             sys.exit(0)
 
-        #print i, xVal0, yVal0, yVal1
+        # print i, xVal0, yVal0, yVal1
         print i, 'Diff: %.4f' % (100*(yVal0-yVal1)/yVal0)
 
 if __name__ == "__main__":
 
     # Get the graphs
 
-
-    fN = TFile('fApr_default.root', 'read')
-    fP = TFile('fJun_default.root', 'read')
+    fN = TFile('syst_backupMar20_2par/fApr_default.root', 'read')
+    fP = TFile('syst_backupMar20_2par/fJun_default.root', 'read')
+    #fN = TFile('fApr_default.root', 'read')
+    #fP = TFile('fJun_default.root', 'read')
 
     grN = getSigmaFinalFits(fN,'N')
     grP = getSigmaFinalFits(fP,'P')
@@ -100,17 +101,31 @@ if __name__ == "__main__":
     g200P = grP[1]
     g300P = grP[2]
 
+    print '\n N120:'
+    g120N.Print()
+    print '\n N200:'
+    g200N.Print()
+    print '\n N300:'
     g300N.Print()
+
+
+    print '\n P120:'
+    g120P.Print()
+    print '\n P200:'
+    g200P.Print()
+    print '\n P300:'
+    g300P.Print()
+
     ## -----
-    ## The main result:
+    ## Draw the main result:
 
     c1 = TCanvas("c1","small canvas",600,600);
     mg = TMultiGraph()
     mg.SetTitle('')
 
     drawOpt = 'PL E1'
-    #if opt.log:
-    #    drawOpt = 'P E1'
+    if opt.log:
+        drawOpt = 'P E1'
     mg.Add(g120N,drawOpt)
     mg.Add(g200N,drawOpt)
     mg.Add(g300N,drawOpt)
@@ -247,9 +262,12 @@ if __name__ == "__main__":
             gPadsN[ind].SetLineColor(kRed+3)
             gPadsP[ind].SetLineColor(kBlue+3)
 
-            gPadsP[ind].GetFunction('f3').Delete()
-            gPadsN[ind].GetFunction('f3').Delete()
-
+            try:
+                gPadsP[ind].GetFunction('f3').Delete()
+                gPadsN[ind].GetFunction('f3').Delete()
+            except ReferenceError:
+                print 'f3 does not exist in the graph'
+                
             # Scale P
             gPadsP[ind].Scale(1./opt.scale)
 
@@ -343,6 +361,7 @@ if __name__ == "__main__":
     grP1 = getSigmaFinalFits(fP1,'P')
 
 
+    '''
     print 'N-type:'
     for t in xrange(0,3):
         print '\t Thickness: ',t
@@ -352,3 +371,4 @@ if __name__ == "__main__":
     for t in xrange(0,3):
         print '\t Thickness: ',t
         diffGraphs(grP0[t],grP1[t])
+    '''
