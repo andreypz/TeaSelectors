@@ -401,6 +401,7 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
       varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
       lo = '0.3'
       xTitle = ';(S_{1}/N_{1})#times(S#lower[%s]{#font[12]{i}}/N#lower[%s]{#font[12]{i}}) / #sqrt{(S_{1}/N_{1})^{2} + (S#lower[%s]{#font[12]{i}}/N#lower[%s]{#font[12]{i}})^{2}}' %(lo,lo,lo,lo)
+      xTitle = ';(S/N)_{eff}'
       #xTitle = ';(S_{1}/N_{1})\\times(S_{i} /N_{i}) \\sqrt{(S_{1}/N_{1})^{2} + (S_{i} /N_{i})^{2}}'
       #xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X'+tag
@@ -412,7 +413,7 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
     # print 'xBins:\n \t', xBins
 
     karambaMe[p] = TH1D('Mean' +p,xTitle+";Mean of (t_{i} - t_{1}), ns", len(varBins)-1,array('d',varBins))
-    karambaSi[p] = TH1D('Sigma'+p,xTitle+";sigma(t_{#font[12]{i}} - t_{1}), ns",   len(varBins)-1,array('d',varBins))
+    karambaSi[p] = TH1D('Sigma'+p,xTitle+";#sigma(t_{#font[12]{i}} - t_{1}), ns",   len(varBins)-1,array('d',varBins))
 
     for n in range(1,len(xBins)-1):
       proj = h[p].ProjectionY("", xBins[n], xBins[n+1]-1)
@@ -430,6 +431,12 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
       r = proj.GetRMS()
       FitRangeSigma = 2 # Default: 2
       proj.Fit('gaus','Q','', m-FitRangeSigma*r, m+FitRangeSigma*r)
+
+      # These plots are not really needed, but maybe interesting for debugging:
+      # proj.SetTitleOffset(1.0, "X")
+      # c0.SaveAs(path+'/Gauss_'+p+figName+'_bin'+str(n)+'.png')
+
+
       f = proj.GetFunction('gaus')
       fMean    = f.GetParameter(1)
       fMeanErr = f.GetParError(1)
@@ -469,9 +476,6 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
       #print '\t My Fit result for mean: ', fMean, fMeanErr
       #print '\t  \t for sigma: ', fSigma, fSigmaErr
 
-      # These plots are not really needed, but maybe interesting for debugging:
-      # c0.SaveAs(path+'/Gauss_'+p+figName+'_bin'+str(n)+'.png')
-
     if doSigmaFit:
       # print 'Doing sigma fit on ', hName, tag
       # print '\t pad =',p
@@ -479,14 +483,14 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
 
       # Two parameters fit
 
-      f2 = TF1 ('f2','sqrt([0]*[0]/(x*x) + [1]*[1])', 2,140.)
+      f2 = TF1 ('f2','sqrt([0]*[0]/(x*x) + [1]*[1])', 5,140.)
       f2.SetParameters(1, 0.03)
       f2.SetParLimits(0, 0, 3)
       f2.SetParLimits(1, 0, 0.2)
 
       # Three parameters fit:
 
-      f3 = TF1 ('f3','sqrt([0]*[0]/(x*x) + [1]*[1]/x + [2]*[2])', 2.,140.)
+      f3 = TF1 ('f3','sqrt([0]*[0]/(x*x) + [1]*[1]/x + [2]*[2])', 5.,140.)
       f3.SetParameters(1, 0.3, 0.03)
       f3.SetParLimits(0, 0, 3)
       f3.SetParLimits(1, 0, 1)
@@ -500,7 +504,7 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
       fToUse = f3
       ConstParInd = None
 
-      fitRange = [5,70] # Default range: 5, 70
+      fitRange = [5,140] # Default range: 5, 70. UPD Apr 2017: extend default to 140
       karambaSi[p].Fit(fToUse,'QI','',fitRange[0],fitRange[1])
 
       karambaSi[p].Draw()
@@ -603,13 +607,13 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
     if p=='SiPad1': continue
     karambaSi[p].Write(p+tag)
 
-  drawLabel(tag)
+  #drawLabel(tag)
   c0.SaveAs(path+'/KarambaSi'+figName+'.png')
   c0.SaveAs(path+'/KarambaSi'+figName+'.pdf')
 
 
   if doSigmaFit: return noiseTerm, noiseErr, constTerm, constErr
-
+  else: return None
 
 def effPlot(myF, tag):
   if opt.verb: print "\t Making Eff plots for ->"
@@ -833,11 +837,14 @@ if __name__ == "__main__":
           
       # sigmaPlots with fits:
       # sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_SigOverNoise',tag)
+      #b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, fs, doSigmaFit=False)
       b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, fs, doSigmaFit=True)
       
-      
+    
     for tag in tags:
 
+      if b[tag]==None: continue
+      
       print '\t Fit results for tag:',tag
       #print 0, b[tag]
       #print 1, b[tag][1]
@@ -849,7 +856,7 @@ if __name__ == "__main__":
           print "%s, %.3f +/- %.3f \t %.3f +/- %.3f" % (p, b[tag][0][p], b[tag][1][p], b[tag][2][p], b[tag][3][p])
         except KeyError:
           print 'Key error exception for pad:', p
-
+              
       isBadSet = ('N200' in tag and not opt.june)
 
       FluenceArr    = np.zeros(5,dtype = float)
@@ -868,7 +875,6 @@ if __name__ == "__main__":
       # Setting number for SiPad1 and 2 (both non-radiated):
       if isBadSet:
         # Unfortunately the Pad2 of this set was broken. Hence just pick sensible number for this one:
-        # Use 0.020 if doing 2-param fit, and 0.017 if three param.
         nonRad = 0.016
         constErrasArr[0] = 0.003
       else:

@@ -88,8 +88,10 @@ if __name__ == "__main__":
 
     #fN = TFile('syst_backupMar20_2par/fApr_default.root', 'read')
     #fP = TFile('syst_backupMar20_2par/fJun_default.root', 'read')
-    fN = TFile('fApr_default.root', 'read')
-    fP = TFile('fJun_default.root', 'read')
+    #fN = TFile('fApr_default.root', 'read')
+    #fP = TFile('fJun_default.root', 'read')
+    fN = TFile('fApr.root', 'read')
+    fP = TFile('fJun.root', 'read')
 
     grN = getSigmaFinalFits(fN,'N')
     grP = getSigmaFinalFits(fP,'P')
@@ -101,21 +103,32 @@ if __name__ == "__main__":
     g200P = grP[1]
     g300P = grP[2]
 
-    print '\n N120:'
-    g120N.Print()
-    print '\n N200:'
-    g200N.Print()
-    print '\n N300:'
-    g300N.Print()
 
-
-    print '\n P120:'
-    g120P.Print()
-    print '\n P200:'
-    g200P.Print()
-    print '\n P300:'
-    g300P.Print()
-
+    l = 'n & N120 & N200 & N300 & P120 & P200 & P300 \\\\ \\hline'
+    print l
+    for n in range(6):
+        l = str(n)+'&  '
+        x0,y0 = Double(0), Double(0)
+        g120N.GetPoint(n, x0,y0)
+        er = g120N.GetErrorY(n)
+        l += '$%.1f \\pm %.1f$ &  ' % (y0, er)
+        g200N.GetPoint(n, x0,y0)
+        er = g200N.GetErrorY(n)
+        l += '$%.1f \\pm %.1f$ &  ' % (y0, er)
+        g300N.GetPoint(n, x0,y0)
+        er = g300N.GetErrorY(n)
+        l += '$%.1f \\pm %.1f$ &  ' % (y0, er)
+        g120P.GetPoint(n, x0,y0)
+        er = g120P.GetErrorY(n)
+        l += '$%.1f \\pm %.1f$ &  ' % (y0, er)
+        g200P.GetPoint(n, x0,y0)
+        er = g200P.GetErrorY(n)
+        l += '$%.1f \\pm %.1f$ &  ' % (y0, er)
+        g300P.GetPoint(n, x0,y0)
+        er = g300P.GetErrorY(n)
+        l += '$%.1f \\pm %.1f$ \\\\' % (y0, er)
+        
+        print l
     ## -----
     ## Draw the main result:
 
@@ -208,6 +221,8 @@ if __name__ == "__main__":
 
     ## -------
     ## Making ratio and shifts for N-P comparisons
+    gStyle.SetOptFit(0)
+    gStyle.SetOptStat(0)
 
     if opt.ratio and opt.diff:
         c2 = TCanvas("c2","ratio canvas",600,800);
@@ -263,8 +278,8 @@ if __name__ == "__main__":
             gPadsP[ind].SetLineColor(kBlue+3)
 
             try:
-                gPadsP[ind].GetFunction('f3').Delete()
-                gPadsN[ind].GetFunction('f3').Delete()
+                gPadsP[ind].GetFunction('f2').Delete()
+                gPadsN[ind].GetFunction('f2').Delete()
             except ReferenceError:
                 print 'f3 does not exist in the graph'
                 
@@ -316,7 +331,6 @@ if __name__ == "__main__":
                 d=gPadsP[ind].Clone()
                 d.Add(gPadsN[ind], -1)
                 d.Draw()
-                #d.GetFunction('f3').Delete()
 
                 d.GetYaxis().SetTitle("Diff: P-N (ns)")
                 if opt.scale==1.0:
@@ -324,8 +338,8 @@ if __name__ == "__main__":
                 else:
                     offset = opt.shift
 
-                d.SetMaximum(offset + 0.016)
-                d.SetMinimum(offset - 0.016)
+                d.SetMaximum(offset + 0.036)
+                d.SetMinimum(offset - 0.036)
                 d.GetYaxis().SetNdivisions(206)
                 d.GetYaxis().SetTitleOffset(0.4)
                 d.SetTitleSize(0.15,"XYZ")
