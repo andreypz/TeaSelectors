@@ -19,6 +19,10 @@ parser.add_argument("--allruns",  dest="allruns", action="store_true", default=F
                     help="Make the plots for each run (they shold be present in the input file)")
 parser.add_argument("--syst",  dest="syst", action="store_true", default=False,
                     help="Do systematcis on sigma plots")
+parser.add_argument("--gr",  dest="useGraph", action="store_true", default=False,
+                    help="Use TGraph to store signa plot and fit it (instead of TH1)")
+parser.add_argument("--f3",  dest="f3", action="store_true", default=False,
+                    help="Use 3-parameter fit (fefault is 2paramers)")
 parser.add_argument("--log",  dest="log", action="store_true", default=False,
                     help="Make some plots in log scale")
 
@@ -186,9 +190,9 @@ def allPadsOnOnePlot(myF, hName, tag, fit=False, overHists=None):
     #print 'pad', p,  suffix
 
     newName = str(hName+suffix+tag)
-    
+
     try:
-      h[p]=myF.Get(newName).Clone()  
+      h[p]=myF.Get(newName).Clone()
     except ReferenceError:
       if p=='SiPad1' or (p=='SiPad2' and isBadSet):
         if opt.verb: print '\t Well, this is the front pad Just skip it:', p
@@ -362,6 +366,7 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
 
   h = {}
   karambaMe, karambaSi = {}, {}
+  grafaraSi = {}
   constTerm, noiseTerm, noiseErr, constErr = {}, {}, {}, {}
   for p, ch in allPads.iteritems():
     p=str(p)
@@ -389,18 +394,18 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
       xTitle = ';Number of MiPs'
       figName = '_VS_nMIPs'+tag
     elif '_VS_SigOverNoise' in hName:
-      varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
+      varBins = [2,3,5,7,9,11,13,15,17,19,22,25,28,31,35,40,50,70,140]
       xTitle = ';Signal/Noise'
       figName = '_VS_SigOverNoise'+tag
     elif '_VS_sOvern_Pad1X_nMiPcut' in hName:
-      varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
+      varBins = [2,3,5,7,9,11,13,15,17,19,22,25,28,31,35,40,50,70,140]
       xTitle = ';Effective S/N'
       figName = '_VS_sOvern_Pad1X_nMiPcut'+tag
     elif '_VS_sOvern_Pad1X' in hName:
       #varBins = [3,10,20,30,40,50,60,70,80,90,100,110,120,130,140]
-      varBins = [2,3,5,7,9,11,13,15,17,20,22,25,28,31,35,40,50,70,140]
-      lo = '0.3'
-      xTitle = ';(S_{1}/N_{1})#times(S#lower[%s]{#font[12]{i}}/N#lower[%s]{#font[12]{i}}) / #sqrt{(S_{1}/N_{1})^{2} + (S#lower[%s]{#font[12]{i}}/N#lower[%s]{#font[12]{i}})^{2}}' %(lo,lo,lo,lo)
+      varBins = [2,3,5,7,9,11,13,15,17,19,22,25,28,31,35,40,50,70,140]
+      #lo = '0.3'
+      #xTitle = ';(S_{1}/N_{1})#times(S#lower[%s]{#font[12]{i}}/N#lower[%s]{#font[12]{i}}) / #sqrt{(S_{1}/N_{1})^{2} + (S#lower[%s]{#font[12]{i}}/N#lower[%s]{#font[12]{i}})^{2}}' %(lo,lo,lo,lo)
       xTitle = ';(S/N)_{eff}'
       #xTitle = ';(S_{1}/N_{1})\\times(S_{i} /N_{i}) \\sqrt{(S_{1}/N_{1})^{2} + (S_{i} /N_{i})^{2}}'
       #xTitle = ';Effective S/N'
@@ -408,29 +413,35 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
 
     # xBins are bin-numbers of the varBins (see conversion above)
     # It assumes that the total number of bins on the axis is 400.
-    xBins = [int(400*x/(varBins[-1]-varBins[0]))+1 for x in varBins]
+    xBins = [int(400.0*(x-varBins[0])/(varBins[-1]-varBins[0]))+1 for x in varBins]
     # print 'varBins:\n \t', varBins
     # print 'xBins:\n \t', xBins
 
     karambaMe[p] = TH1D('Mean' +p,xTitle+";Mean of (t_{i} - t_{1}), ns", len(varBins)-1,array('d',varBins))
-    karambaSi[p] = TH1D('Sigma'+p,xTitle+";#sigma(t_{#font[12]{i}} - t_{1}), ns",   len(varBins)-1,array('d',varBins))
+    karambaSi[p] = TH1D('Sigma'+p,xTitle+";#sigma(t_{#font[12]{i}} - t_{1}), ns", len(varBins)-1,array('d',varBins))
 
-    for n in range(1,len(xBins)-1):
+    grafaraSi[p] = TGraphAsymmErrors()
+
+    nGr = -1
+    for n in range(len(xBins)-1):
       proj = h[p].ProjectionY("", xBins[n], xBins[n+1]-1)
 
-      # print n,'Doing bin:', xBins[n], xBins[n+1]
-      # print ' \t which correspond to varBins:\n\t', varBins[n], varBins[n+1]
+      # print n,'Doing bin:', xBins[n], 'to', xBins[n+1]-1
+      # print ' \t which correspond to varBins:\n\t', varBins[n], 'to', varBins[n+1]
+
       if proj.GetEntries()<200: # Default: 200
         if opt.verb:
           print '\t WARNING: you have too few events to fit for tag:', tag
-          print '\t\t  nEvents = ',proj.GetEntries(),'  pad = '+p+'  bins:', xBins[n], xBins[n+1]
+          print '\t\t nEvents = ',proj.GetEntries(),'  pad = '+p+'  bins:', xBins[n], xBins[n+1]
           print '\t I must continue without this point...'
         continue
 
+      nGr+=1 # This is point counter for TGraph
+      
       m = proj.GetMean()
       r = proj.GetRMS()
       FitRangeSigma = 2 # Default: 2
-      proj.Fit('gaus','Q','', m-FitRangeSigma*r, m+FitRangeSigma*r)
+      proj.Fit('gaus','QI','', m-FitRangeSigma*r, m+FitRangeSigma*r)
 
       # These plots are not really needed, but maybe interesting for debugging:
       # proj.SetTitleOffset(1.0, "X")
@@ -448,11 +459,20 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
 
       karambaSi[p].SetBinContent(n+1,fSigma)
 
-      if not opt.syst:
+      # grafaraSi[p].SetPoint(nGr, 0.5*(varBins[n]+varBins[n+1]), fSigma)
+      # Let's set the point at the mean of the bin:
+      h[p].GetXaxis().SetRange(xBins[n],  xBins[n+1]-1)
+      # print 'Mean in given range:', h[p].GetMean(), 'RMS=', h[p].GetRMS()
+      xPos = h[p].GetMean()
+      grafaraSi[p].SetPoint(nGr, xPos, fSigma)
+      h[p].GetXaxis().SetRange()
+
+      binWidth = (varBins[n+1]-varBins[n])
+      if not opt.syst or len(sysFiles)==0:
         karambaSi[p].SetBinError(n+1,fSigmaErr)
-      elif len(sysFiles)==0:
-        print 'No syst files provided to do systematics... Will take the fit uncerrtainty.'
-        karambaSi[p].SetBinError(n+1,fSigmaErr)
+        grafaraSi[p].SetPointError(nGr, xPos-varBins[n], varBins[n+1]-xPos, fSigmaErr, fSigmaErr)
+        if opt.syst and len(sysFiles)==0:
+          print 'No syst files provided to do systematics... Will take the fit uncerrtainty.'
       else:
         fTotErr = 0 # Total error in percent
         if fSigma!=0:
@@ -463,18 +483,26 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
             sDiff = fSigma - hSys.GetBinContent(n+1)
             syst.append(sDiff/fSigma)
           s = np.array(syst)
+
           # print p, n, s
           fTotErr = np.sqrt(np.sum(np.square(s)))
           # print '\t fTotErr=', fTotErr
 
         karambaSi[p].SetBinError(n+1,fTotErr*fSigma)
+        grafaraSi[p].SetPointError(nGr, xPos-varBins[n], varBins[n+1]-xPos, fTotErr*fSigma, fTotErr*fSigma)
 
-      karambaMe[p].SetLineColor(PadsCol[p])
-      karambaMe[p].SetLineWidth(2)
-      karambaSi[p].SetLineColor(PadsCol[p])
-      karambaSi[p].SetLineWidth(2)
       #print '\t My Fit result for mean: ', fMean, fMeanErr
       #print '\t  \t for sigma: ', fSigma, fSigmaErr
+
+    # <-- end of loop over n (xBins and varBbins)
+
+    karambaMe[p].SetLineColor(PadsCol[p])
+    karambaMe[p].SetLineWidth(2)
+    karambaSi[p].SetLineColor(PadsCol[p])
+    karambaSi[p].SetLineWidth(2)
+    
+    grafaraSi[p].SetLineColor(PadsCol[p])
+    grafaraSi[p].SetLineWidth(2)
 
     if doSigmaFit:
       # print 'Doing sigma fit on ', hName, tag
@@ -497,53 +525,95 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
       f3.SetParLimits(2, 0., 0.3)
 
       # For two-parameter fit and const term:
-      #fToUse = f2
-      #ConstParInd = 1
+      fToUse = f2
+      ConstParInd = 1
 
-      # For three-paremeter fit
-      fToUse = f3
-      ConstParInd = None
+      if opt.f3:
+        # For three-paremeter fit
+        fToUse = f3
+        ConstParInd = None
+
 
       fitRange = [5,140] # Default range: 5, 70. UPD Apr 2017: extend default to 140
-      karambaSi[p].Fit(fToUse,'QI','',fitRange[0],fitRange[1])
 
-      karambaSi[p].Draw()
-      karambaSi[p].SetMaximum(0.4)
-      karambaSi[p].SetMinimum(0.0)
-      fToUse.SetRange(fitRange[0], fitRange[1])
-      fToUse.Draw("same")
-      if opt.log:
-        c0_2.SetLogy()
-        karambaSi[p].SetMinimum(0.01)
-
+      # A hist to store confidance interval:
       confidInt = TH1D("confidInt", "Fitted func with conf. band", 200, fitRange[0], 110)
-      TVirtualFitter.GetFitter().GetConfidenceIntervals(confidInt, 0.68);
       confidInt.SetStats(kFALSE)
       confidInt.SetFillColor(2)
-      # confidInt.Draw("e3 same")
-      
-      c0_2.SaveAs(path+'/SigmaFit_SOverN'+figName+"_"+p+'.png')
-      
-      noiseTerm[p] = fToUse.GetParameter(0)
-      noiseErr[p]  = fToUse.GetParError(0)
 
-      if ConstParInd==None:
+      if not opt.useGraph:
+        karambaSi[p].Fit(fToUse,'Q','',fitRange[0],fitRange[1])
+        TVirtualFitter.GetFitter().GetConfidenceIntervals(confidInt, 0.68);
+
+        karambaSi[p].Draw()
+        karambaSi[p].SetMaximum(0.4)
+        karambaSi[p].SetMinimum(0.0)
+        karambaSi[p].GetXaxis().SetLimits(0, varBins[-1])
+        fToUse.SetRange(fitRange[0], fitRange[1])
+        fToUse.Draw("same")
+        if opt.log:
+          karambaSi[p].SetMinimum(0.01)
+          c0_2.SetLogy()
+
+        if opt.f3:
+          confidInt.Draw("e3 same")
+
+        c0_2.SaveAs(path+'/SigmaFit_SOverN'+figName+"_"+p+'.png')
+        c0_2.SetLogy(0)
+        
+        noiseTerm[p] = fToUse.GetParameter(0)
+        noiseErr[p]  = fToUse.GetParError(0)
+
+      else:
+        # ----
+        # Fitting the TGraph instead of the TH1:
+
+        grafaraSi[p].Fit(fToUse,'QE','',fitRange[0],fitRange[1])
+        TVirtualFitter.GetFitter().GetConfidenceIntervals(confidInt, 0.68);
+
+        grafaraSi[p].Draw("APZ")
+        grafaraSi[p].SetMaximum(0.4)
+        grafaraSi[p].SetMinimum(0.0)
+        grafaraSi[p].GetXaxis().SetLimits(0, varBins[-1])
+        fToUse.SetRange(fitRange[0], fitRange[1])
+        fToUse.Draw("same")
+        if opt.log:
+          c0_2.SetLogy()
+          grafaraSi[p].SetMinimum(0.01)
+
+        if opt.f3:
+          confidInt.Draw("e3 same")
+
+        grafaraSi[p].SetTitle(xTitle+";#sigma(t_{#font[12]{i}} - t_{1}), ns")
+        c0_2.SaveAs(path+'/SigmaFit_SOverN_graf'+figName+"_"+p+'.png')
+        c0_2.SetLogy(0)
+
+        noiseTerm[p] = fToUse.GetParameter(0)
+        noiseErr[p]  = fToUse.GetParError(0)
+
+
+      if ConstParInd!=None:
+        constTerm[p] = fToUse.GetParameter(ConstParInd)
+        constErr[p]  = fToUse.GetParError(ConstParInd)
+        
+      else:
         # When the const term is not reliable, let's just evaluate the function at S/N=100:
         constTerm[p] = fToUse.Eval(100)
         #constTerm[p] = confidInt.GetBinContent(confidInt.FindBin(100))
+
+
         # Assign the error from Confidence interval thingy
         constErr[p] = confidInt.GetBinError(confidInt.FindBin(100))
-        
+
         # If can't be helped, set it to 10% uncertainty:
         #constErr[p]  = 0.10*constTerm[p]
 
-      else:
-        constTerm[p] = fToUse.GetParameter(ConstParInd)
-        constErr[p]  = fToUse.GetParError(ConstParInd)
 
       confidInt.Delete()
     # <-- if dosigmafit indent
   # <-- for p, ch indent
+
+  c0.cd()
   
   drawOpt= 'e1p'
   karambaMe['SiPad3'].Draw(drawOpt)
@@ -555,7 +625,7 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
   karambaMe['SiPad3'].SetMinimum(-0.4)
   karambaMe['SiPad3'].SetMaximum(0.6)
 
-  leg = TLegend(0.73,0.66,0.92,0.90)
+  leg = TLegend(0.67,0.62,0.92,0.90)
   if not isBadSet:
     leg.AddEntry(karambaMe["SiPad2"],"SiPad2", "l")
   leg.AddEntry(karambaMe['SiPad3'],"SiPad3", "l")
@@ -579,12 +649,10 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
   karambaSi['SiPad3'].SetMinimum(0.0)
   karambaSi['SiPad3'].SetMaximum(0.3)
 
-  #leg.Draw()
-  #leg.Clear()
   karambaSi['SiPad3'].SetTitleSize(0.04,"X")
   karambaSi['SiPad3'].SetTitleOffset(1.3, "X")
 
-  leg2 = TLegend(0.73,0.66,0.92,0.90)
+  leg2 = TLegend(0.67,0.62,0.92,0.90)
   if '120' in tag:
     T = '120'
   elif '200' in tag:
@@ -594,27 +662,57 @@ def sigmaPlot(myF, hName, tag, sysFiles=[], doSigmaFit=False):
 
   leg2.SetHeader('  Fluence:')
   if not isBadSet:
-    leg2.AddEntry(karambaMe["SiPad2"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad2']), "l")
-  leg2.AddEntry(karambaMe["SiPad3"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad3']), "l")
-  leg2.AddEntry(karambaMe["SiPad4"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad4']), "l")
-  leg2.AddEntry(karambaMe["SiPad5"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad5']), "l")
-  leg2.AddEntry(karambaMe["SiPad6"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad6']), "l")
+    leg2.AddEntry(karambaSi["SiPad2"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad2']), "l")
+  leg2.AddEntry(karambaSi["SiPad3"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad3']), "l")
+  leg2.AddEntry(karambaSi["SiPad4"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad4']), "l")
+  leg2.AddEntry(karambaSi["SiPad5"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad5']), "l")
+  leg2.AddEntry(karambaSi["SiPad6"],'%1.2E'%(SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T+'um']]['SiPad6']), "l")
   leg2.SetFillColor(kWhite)
   leg2.Draw()
 
   out.cd()
   for p, ch in allPads.iteritems():
     if p=='SiPad1': continue
-    karambaSi[p].Write(p+tag)
+    if opt.useGraph:
+      grafaraSi[p].Write(p+tag)
+    else:
+      karambaSi[p].Write(p+tag)
 
   #drawLabel(tag)
   c0.SaveAs(path+'/KarambaSi'+figName+'.png')
   c0.SaveAs(path+'/KarambaSi'+figName+'.pdf')
 
 
+  drawOpt="PZ"
+  grafaraSi['SiPad3'].Draw("A"+drawOpt)
+  grafaraSi['SiPad3'].GetXaxis().SetLimits(0, 140)
+  grafaraSi['SiPad3'].SetTitle(xTitle+";#sigma(t_{#font[12]{i}} - t_{1}), ns")
+
+  if not isBadSet:
+    grafaraSi['SiPad2'].Draw(drawOpt+' same')
+  grafaraSi['SiPad4'].Draw(drawOpt+' same')
+  grafaraSi['SiPad5'].Draw(drawOpt+' same')
+  grafaraSi['SiPad6'].Draw(drawOpt+' same')
+  grafaraSi['SiPad3'].SetMinimum(0.0)
+  grafaraSi['SiPad3'].SetMaximum(0.3)
+
+  leg2.Draw()
+  if opt.log:
+    grafaraSi['SiPad3'].SetMinimum(0.010)
+    c0.SetLogy()
+    logExt= '_Log'
+  else:
+    logExt=''
+  c0.SaveAs(path+'/GrafaraSi'+figName+logExt+'.png')
+  c0.SaveAs(path+'/GrafaraSi'+figName+logExt+'.pdf')
+
+  c0.SetLogy(0)
+
   if doSigmaFit: return noiseTerm, noiseErr, constTerm, constErr
   else: return None
 
+
+  
 def effPlot(myF, tag):
   if opt.verb: print "\t Making Eff plots for ->"
   isBadSet = ('N200' in tag and not opt.june)
@@ -786,7 +884,6 @@ if __name__ == "__main__":
   if not opt.mini:
     justPlotAll(f,'PER-RUN')
 
-
     runs = [SiPad_DATA['BeginRun'], SiPad_DATA['EndRun']]
     hPed = TH1F('Ped','Ped', runs[1]-runs[0], runs[0], runs[1])
     hPio = TH1F('Pio','Pio', runs[1]-runs[0], runs[0], runs[1])
@@ -834,17 +931,17 @@ if __name__ == "__main__":
           fs.append(TFile(Month+'_3rms.root',  'read'))
           fs.append(TFile(Month+'_Nev50.root', 'read'))
           #fs.append(TFile(Month+'_Nev300.root', 'read'))
-          
+
       # sigmaPlots with fits:
       # sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_SigOverNoise',tag)
       #b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, fs, doSigmaFit=False)
       b[tag] = sigmaPlot(f, 'Timing'+tag+'/2D_Delay_from_Pad1_frac50_VS_sOvern_Pad1X',tag, fs, doSigmaFit=True)
-      
-    
+
+
     for tag in tags:
 
       if b[tag]==None: continue
-      
+
       print '\t Fit results for tag:',tag
       #print 0, b[tag]
       #print 1, b[tag][1]
@@ -856,7 +953,7 @@ if __name__ == "__main__":
           print "%s, %.3f +/- %.3f \t %.3f +/- %.3f" % (p, b[tag][0][p], b[tag][1][p], b[tag][2][p], b[tag][3][p])
         except KeyError:
           print 'Key error exception for pad:', p
-              
+
       isBadSet = ('N200' in tag and not opt.june)
 
       FluenceArr    = np.zeros(5,dtype = float)
@@ -875,7 +972,7 @@ if __name__ == "__main__":
       # Setting number for SiPad1 and 2 (both non-radiated):
       if isBadSet:
         # Unfortunately the Pad2 of this set was broken. Hence just pick sensible number for this one:
-        nonRad = 0.016
+        nonRad = 0.014
         constErrasArr[0] = 0.003
       else:
         nonRad = b[tag][2]['SiPad2']/sqrt(2)
@@ -885,7 +982,7 @@ if __name__ == "__main__":
       FluenceArr[0] = 0
 
       for i,p in enumerate(['SiPad3','SiPad4','SiPad5','SiPad6']):
-        
+
         # Get fluences from the JSON:
         FluenceArr[i+1] = 1E-15*SiPad_DATA['fluence'][SiPad_DATA['SetsMap2'][T[1:]+'um']][p]
 
@@ -897,17 +994,25 @@ if __name__ == "__main__":
           constTermsArr[i+1] = b[tag][2][p]/sqrt(2)
 
         # Propagate errors:
-        S1 = b[tag][2][p]  # Total (convaluted) value
+        S1 = b[tag][2][p]  # Total (convoluted) value
         S2 = nonRad        # Resolution of non-radiated diode
         S1_er = b[tag][3][p]
         S2_er = constErrasArr[0]
         # Error on deconvoluted value of the radiated diode resolution:
         constErrasArr[i+1] = (1./constTermsArr[i+1])*sqrt( (S1*S1_er)**2 + (S2*S2_er)**2)
 
+        if opt.verb:
+          print i,p, "%.1f+/-%.1f  %.1f+/-%.1f" %(1000*S1, 1000*S1_er, 1000*S2, 1000*S2_er)
+          print "Calc:", "%.1f+/-%.1f" % (1000*constTermsArr[i+1], 1000*constErrasArr[i+1])
+                  
       # Get the results in picoseconds:
       constTermsArr = constTermsArr*1000
       constErrasArr = constErrasArr*1000
 
+      if opt.verb:
+        print constTermsArr 
+        print constErrasArr
+          
       g = TGraphErrors(5, FluenceArr, constTermsArr, xArrZeros, constErrasArr)
 
       out.cd()

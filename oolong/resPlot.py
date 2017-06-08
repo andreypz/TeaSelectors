@@ -8,6 +8,7 @@ parser.add_argument("--shift", dest="shift", type=float, default=0.0, help='Shif
 parser.add_argument("--log",   dest="log",   action="store_true", default=False, help='Do logX')
 parser.add_argument("--ratio", dest="ratio", action="store_true", default=False, help='Plot ratio of P to N')
 parser.add_argument("--diff",  dest="diff",  action="store_true", default=False, help='Plot difference ot P to N')
+parser.add_argument("--f3",  dest="f3",  action="store_true", default=False, help='Specify this if 3-parameter fit was done.')
 
 opt = parser.parse_args()
 
@@ -16,8 +17,6 @@ gROOT.SetBatch()
 gROOT.ProcessLine(".L ../sugar-n-milk/tdrstyle.C")
 setTDRStyle()
 gROOT.ForceStyle()
-
-
 
 def getSigmaFinalFits(fRoo, siType='N', HV='800'):
 
@@ -53,7 +52,7 @@ def getSigmaFinalFits(fRoo, siType='N', HV='800'):
 
 def getSigmaSiPads(fRoo, siType='N', HV='800'):
 
-    gPads = {}
+    sensor = {}
 
     for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
         for th in ['120','200','300']:
@@ -62,9 +61,9 @@ def getSigmaSiPads(fRoo, siType='N', HV='800'):
 
             grName = p+'_GROUP_0_ELE_SENSOR_'+siType+th+'_irrHV_'+HV
             if fRoo.GetListOfKeys().Contains(grName):
-                gPads[ind] = fRoo.Get(grName).Clone()
+                sensor[ind] = fRoo.Get(grName).Clone()
 
-    return gPads
+    return sensor
 
 def diffGraphs(gr1, gr2):
     nPoints = gr1.GetN()
@@ -219,11 +218,11 @@ if __name__ == "__main__":
 
 
 
-    ## -------
-    ## Making ratio and shifts for N-P comparisons
     gStyle.SetOptFit(0)
     gStyle.SetOptStat(0)
 
+    ## -------
+    ## Making ratio and shifts for N-P comparisons
     if opt.ratio and opt.diff:
         c2 = TCanvas("c2","ratio canvas",600,800);
         c2.cd()
@@ -254,14 +253,11 @@ if __name__ == "__main__":
         pad1 = c2.GetPad(0)
 
 
-    gPadsN = getSigmaSiPads(fN, 'N')
-    #print gPadsN
+    sensorN = getSigmaSiPads(fN, 'N')
+    #print sensorN
 
-    gPadsP = getSigmaSiPads(fP, 'P')
-    #print gPadsP
-
-
-    gStyle.SetOptFit(0)
+    sensorP = getSigmaSiPads(fP, 'P')
+    #print sensorP
 
     for p in ['SiPad2','SiPad3','SiPad4','SiPad5','SiPad6']:
         for th in ['120','200','300']:
@@ -270,31 +266,52 @@ if __name__ == "__main__":
             ind=p+'_'+th
 
             pad1.cd()
-            gPadsN[ind].Draw('e1p')
-            gPadsP[ind].Draw('e1p same')
-            gPadsN[ind].SetMaximum(0.3)
-            gPadsN[ind].SetMinimum(0.01)
-            gPadsN[ind].SetLineColor(kRed+3)
-            gPadsP[ind].SetLineColor(kBlue+3)
-
+            
+            fitFunc = 'f2'
+            if opt.f3:
+                fitFunc='f3'
             try:
-                gPadsP[ind].GetFunction('f2').Delete()
-                gPadsN[ind].GetFunction('f2').Delete()
+                #stat1 = sensorP[ind].GetListOfFunctions().FindObject("stats")
+                #stat1.SetOptFit(0)
+                #stat2 = sensorN[ind].GetListOfFunctions().FindObject("stats")
+                #stat2.SetOptFit(0)
+                sensorP[ind].GetFunction(fitFunc).SetBit(TF1.kNotDraw)
+                sensorN[ind].GetFunction(fitFunc).SetBit(TF1.kNotDraw)
+                #sensorP[ind].GetFunction(fitFunc).Delete()
+                #sensorN[ind].GetFunction(fitFunc).Delete()
+                # pass
             except ReferenceError:
-                print 'f3 does not exist in the graph'
-                
-            # Scale P
-            gPadsP[ind].Scale(1./opt.scale)
+                print fitFunc, ' does not exist in the graph'
 
-            # Shift P
-            for b in range(1, gPadsP[ind].GetNbinsX()+1):
-                # print 'bin:', b
-                gPadsP[ind].SetBinContent(b, gPadsP[ind].GetBinContent(b) - opt.shift)
+            if sensorN[ind].InheritsFrom("TH1"):
+                sensorN[ind].Draw('e1p')
+            else: # These are TGraphs
+                sensorN[ind].Draw('apz')
 
+            sensorP[ind].Draw('e1p same')
+            sensorN[ind].SetMaximum(0.3)
+            sensorN[ind].SetMinimum(0.01)
+            sensorN[ind].SetLineColor(kRed+3)
+            sensorP[ind].SetLineColor(kBlue+3)
+            gROOT.ForceStyle()
+            #gPad.UseCurrentStyle()
+            #c1.Modified()
+            #c1.Update()
+            
+            if sensorN[ind].InheritsFrom("TH1"):
+                # Scale P
+                sensorP[ind].Scale(1./opt.scale)
 
+                # Shift P
+                for b in range(1, sensorP[ind].GetNbinsX()+1):
+                    # print 'bin:', b
+                    sensorP[ind].SetBinContent(b, sensorP[ind].GetBinContent(b) - opt.shift)
+            else:
+                pass
+            
             leg = TLegend(0.50,0.7,0.85,0.85)
-            leg.AddEntry(gPadsN[ind], th+'N '+p, 'PL')
-            leg.AddEntry(gPadsP[ind], th+'P '+p, 'PL')
+            leg.AddEntry(sensorN[ind], th+'N '+p, 'PL')
+            leg.AddEntry(sensorP[ind], th+'P '+p, 'PL')
             leg.SetTextFont(42)
             leg.SetTextSize(0.04)
             leg.SetFillColor(kWhite)
@@ -302,8 +319,8 @@ if __name__ == "__main__":
 
             if opt.ratio:
                 pad2.cd()
-                r=gPadsP[ind].Clone()
-                r.Divide(gPadsN[ind])
+                r=sensorP[ind].Clone()
+                r.Divide(sensorN[ind])
                 r.Draw()
                 #r.GetFunction('f3').Delete()
 
@@ -328,8 +345,8 @@ if __name__ == "__main__":
                     pad3.cd()
                 else:
                     pad2.cd()
-                d=gPadsP[ind].Clone()
-                d.Add(gPadsN[ind], -1)
+                d=sensorP[ind].Clone()
+                d.Add(sensorN[ind], -1)
                 d.Draw()
 
                 d.GetYaxis().SetTitle("Diff: P-N (ns)")
@@ -357,6 +374,7 @@ if __name__ == "__main__":
     # ---------------
     # Now, let's play with systematics
 
+    """
     grN0 = getSigmaFinalFits(fN,'N')
     grP0 = getSigmaFinalFits(fP,'P')
 
@@ -373,7 +391,7 @@ if __name__ == "__main__":
     fP1 = TFile('fJun_'+sysTag+'.root', 'read')
     grN1 = getSigmaFinalFits(fN1,'N')
     grP1 = getSigmaFinalFits(fP1,'P')
-
+    """
 
     '''
     print 'N-type:'
