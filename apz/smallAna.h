@@ -11,7 +11,7 @@
 
 #include "HistManager.h"
 
-#define nC 5
+#define nC 10
 class TFile;
 class TProofOutputFile;
 

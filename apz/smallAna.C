@@ -35,7 +35,7 @@ void smallAna::SlaveBegin(TTree * /*tree*/)
    hists    = new HistManager(histoFile);
    for (size_t n=0; n<nC; n++) nEvents[n]=0;
 
-   h1 = new TH1F("evt","evt", 20, 0, 10);
+   h1 = new TH1F("evt","evt", 20, 1, 21);
 }
 
 Bool_t smallAna::Process(Long64_t entry)
@@ -89,8 +89,19 @@ Bool_t smallAna::Process(Long64_t entry)
     makeHists("InSideBand");
     h1->Fill(4);
   }
+
+  const Float_t Mllg = (*lep1+*lep2+*gamma).M();
+
+  //if ( gamma->Pt()/Mllg > 0.35 && (*lep1+*lep2).Pt()/Mllg > 0.35
+  //   && Mllg>100 && Mllg<150) { // Optimal?
+  if ( gamma->Pt()/Mllg > 0.3 && (*lep1+*lep2).Pt()/Mllg > 0.30
+       && Mllg>110 && Mllg<170) { // PAS
+    nEvents[5]++;
+    makeHists("M18");
+    h1->Fill(5);
+  }
   
-  h1->Fill(5);
+  h1->Fill(6);
 
   return kTRUE;
 }
@@ -126,6 +137,7 @@ void smallAna::makeHists(string tag){
   hists->fill1DHist(Mll, "Mll_50_"+tag,";m_{#mu#mu}",  100, 0,50, 1,tag);
   hists->fill1DHist(Mll, "Mll_20_"+tag,";m_{#mu#mu}",  100, 0,20, 1,tag);
   hists->fill1DHist(Mll, "Mll_20_to_50_"+tag,";m_{#mu#mu}", 50, 20,50, 1,tag);
+  hists->fill1DHist(Mll, "Mll_18_"+tag,";m_{#mu#mu}",  50, 10,30, 1,tag);
   hists->fill1DHist(Mll, "Mll_Ups_"+tag,";m_{#mu#mu}", 60, 9,12, 1,tag);
   hists->fill1DHist(Mll, "Mll_JPsi_"+tag,";m_{#mu#mu}",  50, 2,4, 1,tag);
   hists->fill1DHist(Mll, "Mll_APZ_JPsi_"+tag,";m_{#mu#mu}", 70, 2.7, 3.4, 1,tag);
@@ -141,10 +153,10 @@ void smallAna::makeHists(string tag){
 
   hists->fill1DHist(diLep.Pt()/gamma->Pt(),"pt_ratio_dilep_gamma_"+tag,";p_{T}(#mu#mu)/p_{T}(#gamma)",  50, 0,2, 1,tag);
 
-  hists->fill1DHist(met->Pt(), "met_Et_"+tag,";MET", 50, 0,400, 1,tag);
+  hists->fill1DHist(met->Pt(), "met_Et_"+tag,";MET", 50, 0, 100, 1,tag);
   hists->fill1DHist(met->Phi(), "met_phi_"+tag,";#phi(MET)",  50, -3.2, 3.2, 1,tag);
-  hists->fill1DHist(met->DeltaPhi(diLep), "met_dPhi_dilep_"+tag,";#Delta#phi(MET,#mu#mu)",  50, 0, 5, 1,tag);
-  hists->fill1DHist(met->DeltaPhi(*gamma), "met_dPhi_gamma_"+tag,";#Delta#phi(MET,#gamma)",  50, 0, 5, 1,tag);
+  hists->fill1DHist(met->DeltaPhi(diLep), "met_dPhi_dilep_"+tag,";#Delta#phi(MET,#mu#mu)",  50, 0, 3.2, 1,tag);
+  hists->fill1DHist(met->DeltaPhi(*gamma), "met_dPhi_gamma_"+tag,";#Delta#phi(MET,#gamma)",  50, 0, 3.2, 1,tag);
 
   if (jet1->Pt()>0){
     hists->fill1DHist(jet1->Pt(),  "jet1_pt_"+tag, ";p_{T}(j1)", 50, 20, 120, 1,tag);

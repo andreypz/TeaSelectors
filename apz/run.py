@@ -14,6 +14,9 @@ from ROOT import *
 workingPath = os.getcwd()
 parentDir = os.path.abspath(os.path.join(workingPath, os.pardir))
 SandM_path = parentDir+"/sugar-n-milk/"
+
+gSystem.SetBuildDir("buildDir", kTRUE)
+gSystem.AddIncludePath(" -I"+SandM_path)
 gROOT.LoadMacro(SandM_path+"/HistManager.cc+")
 
 fChain = TChain("apzTree")
@@ -57,8 +60,8 @@ for cut_gamma_pt in gamma_pt_cuts:
         
         f = TFile("my_higgsHistograms.root",'OPEN')  
         evt = f.Get("evt")
-        SplusB = evt.GetBinContent(7)
-        B = (9./11)*evt.GetBinContent(9)
+        SplusB = evt.GetBinContent(3)
+        B = (9./11)*evt.GetBinContent(4)
         S = SplusB - B;
         significance = 2*(sqrt(SplusB) - sqrt(B))
         print "S+B=%i, S=%.1f, signif=%.3f" %(SplusB, S, significance)
