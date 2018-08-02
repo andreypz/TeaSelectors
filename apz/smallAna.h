@@ -43,6 +43,8 @@ class smallAna : public TSelector {
    UInt_t          run;
    ULong64_t       event;
 
+   Bool_t trig1, trig2, trig3, trig4, trig5;
+ 
    // List of branches
    TBranch        *b_lep1;   //!
    TBranch        *b_lep2;   //!
@@ -52,6 +54,12 @@ class smallAna : public TSelector {
    TBranch        *b_met;   //!
    TBranch        *b_run;   //!
    TBranch        *b_event;   //!
+
+   TBranch        *b_trig1;
+   TBranch        *b_trig2;
+   TBranch        *b_trig3;
+   TBranch        *b_trig4;
+   TBranch        *b_trig5;
 
  smallAna(TTree * /*tree*/ =0) : fChain(0), fProofFile(0) { }
    virtual ~smallAna() { }
@@ -108,6 +116,12 @@ void smallAna::Init(TTree *tree)
    fChain->SetBranchAddress("met", &met, &b_met);
    fChain->SetBranchAddress("run", &run, &b_run);
    fChain->SetBranchAddress("event", &event, &b_event);
+
+   fChain->SetBranchAddress("trig1", &trig1, &b_trig1);
+   fChain->SetBranchAddress("trig2", &trig2, &b_trig2);
+   fChain->SetBranchAddress("trig3", &trig3, &b_trig3);
+   fChain->SetBranchAddress("trig4", &trig4, &b_trig4);
+   fChain->SetBranchAddress("trig5", &trig5, &b_trig5);
 }
 
 Bool_t smallAna::Notify()
@@ -118,6 +132,11 @@ Bool_t smallAna::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
 
+  //TFile   *inFile     = thisTree->GetCurrentFile();
+  //cout<<"  Opened file: \n"<<inFile->GetName()<<endl;
+ 
+  cout<<"  Opened file: \n \t\t"<<fChain->GetCurrentFile()->GetName()<<endl;
+  
    return kTRUE;
 }
 

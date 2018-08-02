@@ -19,10 +19,11 @@ gSystem.SetBuildDir("buildDir", kTRUE)
 gSystem.AddIncludePath(" -I"+SandM_path)
 gROOT.LoadMacro(SandM_path+"/HistManager.cc+")
 
-fChain = TChain("apzTree")
+#fChain = TChain("apzTree")
+#fChain.Add('APZ_smalltree_25July2018.root')
 
-#fChain.Add('APZ_smalltree_06June2016.root')
-fChain.Add('APZ_smalltree_25July2018.root')
+fChain = TChain("apzTree/apzTree")
+fChain.Add('APZ-tree-Data-MuEG-8TeV-2018July25.root')
 
 timer = TStopwatch()
 timer.Start()

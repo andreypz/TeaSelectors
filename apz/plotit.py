@@ -41,7 +41,8 @@ if __name__ == "__main__":
   h = {}
 
 
-  primary = "M18"
+  primary = "InAPZ"
+
   for n in ["lep1_pt", "lep2_pt", "gamma_pt",
             "lep1_phi","lep2_phi","gamma_phi",
             "lep1_eta","lep2_eta","gamma_eta",

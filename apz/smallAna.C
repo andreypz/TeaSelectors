@@ -65,6 +65,8 @@ Bool_t smallAna::Process(Long64_t entry)
 
   //hists->fill1DHist(lep1->Pt(), "lep1_pt_test",";p_T(l1)",  100, 0,100, 1,"DIR");
 
+  if (!trig1) return kTRUE;
+
   h1->Fill(1);
 
   nEvents[1]++;
